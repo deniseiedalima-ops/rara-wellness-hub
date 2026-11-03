@@ -27,6 +27,7 @@
   <button data-page="instagram"><span class="ico">◎</span>Instagram</button>
   <button data-page="links"><span class="ico">↗</span>Links</button>
   <button data-page="checklist"><span class="ico">☷</span>Checklist</button>
+  <button data-page="partners"><span class="ico">♡</span>Parceiros</button>
  </nav>
  <div class="side-bottom"><div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Modo local · neste navegador</span></div><button class="small-link" onclick="openSettings()">Configurar sincronização online</button><br>RARA · made with care 🤎</div>
 </aside>
@@ -110,6 +111,20 @@
  <div class="notice">Guarde aqui links de fornecedores, documentos, formulários, pastas, referências, redes sociais e ferramentas da RARA. Cada link fica salvo no workspace.</div>
  <div class="grid idea-grid" id="linksGrid"></div>
 </section>
+<section class="page" id="partners">
+ <div class="toolbar">
+  <button class="btn" onclick="openModal('partner')">＋ Adicionar marca</button>
+  <input id="partnerSearch" type="search" placeholder="Buscar marca..." oninput="renderPartners()" aria-label="Buscar parceiros">
+  <span class="muted">Marcas, investimentos e parcerias da RARA.</span>
+ </div>
+ <div class="grid stats" style="margin-bottom:18px">
+  <div class="card"><div class="stat-label">Marcas cadastradas</div><div class="stat-value" id="partnerCount">0</div></div>
+  <div class="card"><div class="stat-label">Investimentos</div><div class="stat-value" id="partnerInvestmentCount">0</div></div>
+  <div class="card"><div class="stat-label">Parcerias</div><div class="stat-value" id="partnerPartnershipCount">0</div></div>
+ </div>
+ <div class="notice">Cadastre marcas que apoiam a RARA, patrocinadores, permutas, fornecedores parceiros e investimentos. Os registros ficam organizados neste workspace.</div>
+ <div class="grid idea-grid" id="partnersGrid"></div>
+</section>
 </main></div>
 
 <div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h3 id="modalTitle">Novo registro</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div><div class="actions"><button class="btn outline" onclick="closeModal()">Cancelar</button><button class="btn" id="saveModal" type="button">Salvar</button></div></div></div>
@@ -117,10 +132,10 @@
 
 <script>
 const KEY='rara_hub_v1';
-const initial={transactions:[],ideas:[],events:[{id:'soft-reset',name:'The Soft Reset',date:'2026-12-05',place:'Espaço Bougainville · Imperatriz, MA',status:'Em planejamento',description:'Primeiro encontro oficial da RARA Wellness Club.',pages:[{id:'p1',name:'Planejamento geral',tasks:['Confirmar fornecedores e orçamento','Fechar parcerias e expositoras','Definir programação final','Organizar inscrições e pagamentos','Contratar fotografia e cobertura','Preparar kits de Vision Board']},{id:'p2',name:'Experiência & ambientação',tasks:['Planejar aula de alongamento','Alinhar palestra com psicóloga','Organizar atividade de Vision Board','Definir coffee break','Preparar sinalização e decoração']}]}],posts:[]};
+const initial={transactions:[],ideas:[],partners:[],events:[{id:'soft-reset',name:'The Soft Reset',date:'2026-12-05',place:'Espaço Bougainville · Imperatriz, MA',status:'Em planejamento',description:'Primeiro encontro oficial da RARA Wellness Club.',pages:[{id:'p1',name:'Planejamento geral',tasks:['Confirmar fornecedores e orçamento','Fechar parcerias e expositoras','Definir programação final','Organizar inscrições e pagamentos','Contratar fotografia e cobertura','Preparar kits de Vision Board']},{id:'p2',name:'Experiência & ambientação',tasks:['Planejar aula de alongamento','Alinhar palestra com psicóloga','Organizar atividade de Vision Board','Definir coffee break','Preparar sinalização e decoração']}]}],posts:[]};
 let data=load(), cloud=null, selectedEvent=null, activeEventPage=null, activePage='dashboard', modalType=null;
 if(!data || typeof data!=='object' || Array.isArray(data)) data=structuredClone(initial);
-for(const key of ['transactions','ideas','events','posts','links']) if(!Array.isArray(data[key])) data[key]=[];
+for(const key of ['transactions','ideas','partners','events','posts','links']) if(!Array.isArray(data[key])) data[key]=[];
 if(!Array.isArray(data.checklists)) data.checklists=[];
 if(!data.checklists.length) data.checklists=[{id:"general-board",name:"Post-its",tasks:[]}];
 data.checklists=data.checklists.map((board,index)=>({
@@ -157,12 +172,12 @@ function money(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',c
 function dateBR(d){if(!d)return '—';return new Date(d+'T12:00:00').toLocaleDateString('pt-BR')}
 function daysTo(d){return Math.ceil((new Date(d+'T00:00:00')-new Date(new Date().toDateString()))/86400000)}
 function go(p, updateHash=true){
- const allowed=['dashboard','finance','ideas','events','instagram','links','checklist'];
+ const allowed=['dashboard','finance','ideas','events','instagram','links','checklist','partners'];
  if(!allowed.includes(p)) p='dashboard';
  activePage=p;
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
- document.getElementById('pageTitle').textContent={dashboard:'Dashboard',finance:'Financeiro',ideas:'Ideias',events:'Eventos',instagram:'Instagram',links:'Links',checklist:'Checklist'}[p];
+ document.getElementById('pageTitle').textContent={dashboard:'Dashboard',finance:'Financeiro',ideas:'Ideias',events:'Eventos',instagram:'Instagram',links:'Links',checklist:'Checklist',partners:'Parceiros'}[p];
  if(updateHash && location.hash!=='#'+p) history.replaceState(null,'','#'+p);
  renderAll();
  window.scrollTo({top:0,behavior:'smooth'});
@@ -176,6 +191,7 @@ if(type==='idea'){title='Capturar ideia';fields=`${f('Título','title','text',''
 if(type==='event'){title='Criar evento';fields=`${f('Nome do evento','name','text','','required')}${f('Data','date','date')}${f('Local','place')}${f('Status','status','select','','<option>Em planejamento</option><option>Confirmado</option><option>Realizado</option><option>Adiado</option>')}${f('Descrição','description','textarea')}`}
 if(type==='post'){title='Novo conteúdo';fields=`${f('Título / ideia','title','text','','required')}${f('Formato','format','select','','<option>Reels</option><option>Carrossel</option><option>Stories</option><option>Foto</option><option>Live</option>')}${f('Pilar','pillar','select','','<option>Wellness</option><option>Movimento</option><option>Criatividade</option><option>Comunidade</option><option>Bastidores</option><option>Institucional</option>')}${f('Data de publicação','date','date')}${f('Status','status','select','','<option>Ideia</option><option>Em produção</option><option>Agendado</option><option>Publicado</option>')}${f('Legenda / roteiro / referências','description','textarea')}${f('Link do post publicado','link','url')}`}
 if(type==='link'){title='Adicionar link';fields=`${f('Título do link','title','text','','required placeholder="Ex.: Pasta de identidade visual"')}${f('Endereço (URL)','url','url','','required placeholder="https://..."')}${f('Categoria','category','select','','<option>Documentos</option><option>Fornecedores</option><option>Ferramentas</option><option>Redes sociais</option><option>Formulários</option><option>Referências</option><option>Outros</option>')}${f('Observação (opcional)','notes','textarea','','placeholder="O que encontramos neste link?"')}`}
+if(type==='partner'){title='Cadastrar marca / parceiro';fields=`${f('Nome da marca','brand','text','','required placeholder="Ex.: AVATIM"')}${f('Tipo de relação','relationship','select','','<option value="Parceria">Parceria</option><option value="Investimento">Investimento / patrocínio</option><option value="Permuta">Permuta</option><option value="Fornecedor parceiro">Fornecedor parceiro</option><option value="Apoio">Apoio</option>')}${f('Valor do investimento (R$)','amount','number','','min="0" step="0.01" placeholder="Opcional"')}${f('O que a marca oferece','contribution','textarea','','placeholder="Ex.: apoio financeiro, produtos, coffee break..."')}${f('Contato / responsável','contact','text','','placeholder="Nome, telefone ou e-mail"')}${f('Instagram ou site','social','text','','placeholder="@marca ou https://..."')}${f('Status','status','select','','<option>Em negociação</option><option>Confirmado</option><option>Concluído</option><option>Não avançou</option>')}${f('Observações','notes','textarea','','placeholder="Contrapartidas, entregas combinadas, datas..."')}`}
 if(type==='checktask'){title='Novo post-it';let opts=data.checklists.map(b=>`<option value="${esc(b.id)}" ${b.id===selectedChecklistBoard?'selected':''}>${esc(b.name)}</option>`).join('');fields=`${f('Título da tarefa','title','text','','required placeholder="Ex.: Finalizar proposta para marcas"')}${f('Descrição','description','textarea','','placeholder="Detalhes, contexto ou próximos passos..."')}${f('Subaba','board','select','',opts)}${f('Prioridade','priority','select','','<option value="Urgente">Urgente</option><option value="Média" selected>Média</option><option value="Baixa">Baixa</option>')}${f('Prazo (opcional)','due','date')}`}
 body.innerHTML=fields;document.getElementById('modalTitle').textContent=title;document.getElementById('saveModal').onclick=saveModal}
 function val(n){return document.querySelector(`#modalBody [name="${n}"]`)?.value||''}
@@ -186,6 +202,7 @@ function saveModal(){
   if(modalType==='transaction') data.transactions.unshift({id,type:val('type'),amount:+val('amount'),description:val('description'),date:val('date'),category:val('category'),status:val('status'),event:val('event'),notes:val('notes')});
   else if(modalType==='idea') data.ideas.unshift({id,title:val('title').trim(),category:val('category'),description:val('description'),next:val('next'),created:new Date().toISOString()});
   else if(modalType==='event') data.events.push({id,name:val('name').trim(),date:val('date'),place:val('place'),status:val('status'),description:val('description'),pages:[{id:uid(),name:'Planejamento geral',tasks:[]}]});
+  else if(modalType==='partner') data.partners.unshift({id,brand:val('brand').trim(),relationship:val('relationship'),amount:Number(val('amount')||0),contribution:val('contribution').trim(),contact:val('contact').trim(),social:val('social').trim(),status:val('status'),notes:val('notes').trim(),created:new Date().toISOString()});
   else if(modalType==='post') data.posts.unshift({id,title:val('title').trim(),format:val('format'),pillar:val('pillar'),date:val('date'),status:val('status'),description:val('description'),link:val('link')});
   else if(modalType==='link'){
    const title=val('title').trim();
@@ -298,9 +315,27 @@ function renderLinks(){
  document.getElementById('linksGrid').innerHTML=items.map(x=>`<div class="card idea"><div class="tag">${esc(x.category||'Outros')}</div><h3 style="font:500 20px Fraunces;margin:10px 0 7px">${esc(x.title)}</h3>${x.notes?`<p>${esc(x.notes)}</p>`:''}<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px"><a class="btn soft" href="${esc(x.url||'#')}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Abrir link ↗</a><button class="small-link" onclick="copyLink('${x.id}')">copiar endereço</button><button class="small-link" onclick="removeItem('links','${x.id}')">remover</button></div><div class="muted" style="font-size:10px;margin-top:10px;overflow-wrap:anywhere">${esc(x.url)}</div></div>`).join('')||'<div class="empty">Nenhum link encontrado. Adicione seu primeiro acesso importante.</div>';
 }
 function copyLink(id){let item=(data.links||[]).find(x=>x.id===id);if(item&&navigator.clipboard?.writeText)navigator.clipboard.writeText(item.url).then(()=>alert('Link copiado.')).catch(()=>alert(item.url));else if(item)alert(item.url)}
+function renderPartners(){
+ const query=(document.getElementById('partnerSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
+ const all=data.partners||[];
+ const items=all.filter(x=>[x.brand,x.relationship,x.status,x.contribution,x.contact,x.notes].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query)));
+ document.getElementById('partnerCount').textContent=all.length;
+ document.getElementById('partnerInvestmentCount').textContent=all.filter(x=>x.relationship==='Investimento').length;
+ document.getElementById('partnerPartnershipCount').textContent=all.filter(x=>x.relationship!=='Investimento').length;
+ document.getElementById('partnersGrid').innerHTML=items.map(x=>`<article class="card idea">
+  <div class="tag">${esc(x.relationship||'Parceria')} · ${esc(x.status||'')}</div>
+  <h3 style="font:500 21px Fraunces;margin:10px 0 7px">${esc(x.brand)}</h3>
+  ${x.amount?`<div class="stat-value" style="font-size:20px;margin:7px 0">${money(x.amount)}</div>`:''}
+  ${x.contribution?`<p>${esc(x.contribution)}</p>`:''}
+  ${x.contact?`<div class="muted" style="margin-top:8px">Contato: ${esc(x.contact)}</div>`:''}
+  ${x.social?`<div class="muted" style="margin-top:5px;overflow-wrap:anywhere">${esc(x.social)}</div>`:''}
+  ${x.notes?`<p class="muted" style="margin-top:10px">${esc(x.notes)}</p>`:''}
+  <div style="margin-top:14px"><button class="small-link" onclick="removeItem('partners','${x.id}')">remover registro</button></div>
+ </article>`).join('')||'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>';
+}
 function renderAll(){
- data.transactions ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.checklists ||= [];
- renderDashboard();renderFinance();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();
+ data.transactions ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.partners ||= [];data.checklists ||= [];
+ renderDashboard();renderFinance();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();renderPartners();
 }
 function exportCSV(){let rows=[['Tipo','Data','Descrição','Categoria','Evento','Status','Valor'],...data.transactions.map(x=>[x.type,x.date,x.description,x.category,x.event,x.status,x.amount])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='rara-financeiro.csv';a.click();URL.revokeObjectURL(a.href)}
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
