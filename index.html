@@ -12,9 +12,36 @@
 .checklist-layout{display:grid;grid-template-columns:235px minmax(0,1fr);gap:15px;align-items:start}.checklist-sidebar{position:sticky;top:18px}.checklist-board-list{display:grid;gap:6px;margin-top:13px}.board-btn{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;color:#718084;font-size:12px;display:flex;justify-content:space-between;gap:8px}.board-btn:hover,.board-btn.active{background:var(--blue2);color:var(--ink)}.board-btn small{color:#9aa5a5}.checklist-content{min-height:330px}.sticky-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sticky-note{background:#fbf4e7;border:1px solid #eee4d3;border-radius:12px;padding:15px;min-height:150px;display:flex;flex-direction:column}.sticky-note.priority-urgent{background:#fbefed;border-color:#f0d9d6}.sticky-note.priority-medium{background:#eef4f6;border-color:#dce9ed}.sticky-note.priority-low{background:#f0f4ed;border-color:#e0e9dc}.sticky-note.completed{opacity:.62}.sticky-note.completed h4{text-decoration:line-through}.sticky-note h4{font:500 18px Fraunces,serif;margin:10px 0 6px}.sticky-note p{font-size:11px;line-height:1.55;color:#788486;white-space:pre-wrap;margin:0 0 12px}.sticky-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.sticky-footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px}.priority-chip{font-size:9px;text-transform:uppercase;letter-spacing:.8px;border-radius:30px;padding:5px 8px;background:#fff9}.check-action{border:0;background:transparent;color:#78919a;font-size:11px;padding:3px}.dashboard-task{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid #f0ede8}.dashboard-task:last-child{border:0}.dashboard-task input{margin-top:3px;accent-color:#8eabb6}.dashboard-task strong{font-size:12px}.dashboard-task small{display:block;color:#9aa2a1;font-size:10px;margin-top:3px}
 @media(max-width:950px){.side{width:205px}.main{margin-left:205px;width:calc(100% - 205px);padding:25px 22px}.stats{grid-template-columns:repeat(2,1fr)}.dashgrid{grid-template-columns:1fr}.idea-grid,.post-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.checklist-layout{grid-template-columns:1fr}.checklist-sidebar{position:static}.checklist-board-list{display:flex;overflow:auto;padding-bottom:3px}.board-btn{white-space:nowrap}.sticky-grid{grid-template-columns:1fr}.side{position:fixed;inset:auto 0 0;width:100%;height:66px;padding:5px 7px;border-right:0;border-top:1px solid var(--line)}.brand,.workspace,.side-bottom{display:none}.nav{display:flex;justify-content:space-around;gap:0}.nav button{padding:9px 7px;display:grid;justify-items:center;gap:2px;font-size:9px;flex:1}.nav .ico{font-size:17px}.main{margin:0;width:100%;padding:23px 15px 90px}.top{margin-bottom:22px}.page-title{font-size:29px}.topright .userlabel{display:none}.stats{gap:9px}.card{padding:15px}.stat-value{font-size:25px}.event-layout{grid-template-columns:1fr}.event-list{grid-template-columns:repeat(2,1fr)}.idea-grid,.post-grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}}
+
+/* RARA Google sign-in gate */
+#raraAuthGate{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#f7f4ee,#f3e9e3)}
+#raraAuthGate.visible{display:flex}
+.auth-card{width:min(100%,430px);background:#fffdfa;border:1px solid #e9e1d8;border-radius:24px;padding:34px;box-shadow:0 24px 70px #344b5518;text-align:center}
+.auth-mark{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:#f2ece5;color:#9a806d;font:500 36px Fraunces,serif}
+.auth-title{font:500 34px Fraunces,serif;letter-spacing:2px;color:#344b55;margin:0}
+.auth-sub{color:#829096;margin:3px 0 22px}
+.auth-input{width:100%;padding:12px 13px;border:1px solid #e9e5df;border-radius:10px;background:white;margin:6px 0;color:#344b55}
+.auth-google{width:100%;padding:13px 16px;border:1px solid #ddd8d1;border-radius:12px;background:#fff;color:#344b55;font-weight:600;margin-top:12px}
+.auth-google:hover{background:#f7f4ee}
+.auth-note{font-size:12px;color:#829096;line-height:1.5;margin-top:16px}
+.auth-error{font-size:13px;color:#a33b3b;margin-top:12px;min-height:18px}
 </style></head>
 <body>
-<div class="app">
+<div id="raraAuthGate" class="visible">
+ <div class="auth-card">
+  <div class="auth-mark">R</div>
+  <h1 class="auth-title">rara</h1>
+  <div class="auth-sub">wellness club · management hub</div>
+  <p style="color:#586b72;margin:0 0 18px">Entre com a conta oficial para acessar o espaço administrativo.</p>
+  <input class="auth-input" id="authProjectUrl" type="url" placeholder="Supabase Project URL">
+  <input class="auth-input" id="authAnonKey" type="password" placeholder="Supabase publishable / anon key">
+  <button class="auth-google" id="authGoogleButton" type="button" onclick="raraGoogleLogin()">G  Continuar com Google</button>
+  <div class="auth-error" id="authError"></div>
+  <div class="auth-note">Acesso permitido somente para rarawellnessclub@gmail.com. Use a chave pública do projeto; nunca informe a service_role.</div>
+ </div>
+</div>
+
+<div class="app" id="raraApp" style="display:none">
 <aside class="side">
  <div class="brand"><div class="brand-mark" aria-label="RARA monograma">R</div><div class="brand-copy"><div class="brand-name">rara</div><div class="brand-sub">wellness club · workspace</div></div></div>
  <div class="workspace">workspace</div>
@@ -27,7 +54,7 @@
   <button data-page="links"><span class="ico">↗</span>Links</button>
   <button data-page="checklist"><span class="ico">☷</span>Checklist</button>
  </nav>
- <div class="side-bottom"><div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Modo local · neste navegador</span></div><button class="small-link" onclick="openSettings()">Configurar sincronização online</button><br>RARA · made with care 🤎</div>
+ <div class="side-bottom"><button class="small-link" type="button" onclick="raraSignOut()" style="margin:8px 12px">Sair da conta Google</button><div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Modo local · neste navegador</span></div><button class="small-link" onclick="openSettings()">Configurar sincronização online</button><br>RARA · made with care 🤎</div>
 </aside>
 <main class="main">
 <header class="top"><div><div class="eyebrow">RARA / MANAGEMENT HUB</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div><div class="topright"><span class="userlabel muted" id="todayLabel"></span><div class="avatar">R</div></div></header>
@@ -304,7 +331,58 @@ function openSettings(){document.getElementById('settingsModal').classList.add('
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
 async function connectCloud(){let url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim(),email=document.getElementById('sbEmail').value.trim(),password=document.getElementById('sbPassword').value;if(!url||!key||!email||!password)return alert('Informe URL, chave pública, e-mail e senha.');localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);try{cloud=window.supabase.createClient(url,key);let {error:authError}=await cloud.auth.signInWithPassword({email,password});if(authError)throw authError;let {data:row,error}=await cloud.from('rara_workspace').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(row?.payload){data=row.payload;localStorage.setItem(KEY,JSON.stringify(data))}else{let {error:upErr}=await cloud.from('rara_workspace').upsert({id:'main',payload:data});if(upErr)throw upErr}cloud.channel('rara-live').on('postgres_changes',{event:'UPDATE',schema:'public',table:'rara_workspace',filter:'id=eq.main'},payload=>{if(payload.new?.payload){data=payload.new.payload;localStorage.setItem(KEY,JSON.stringify(data));renderAll()}}).subscribe();document.getElementById('syncDot').classList.add('on');document.getElementById('syncText').textContent='Conectado · Supabase';closeSettings();renderAll();alert('Conectado. Os dados serão compartilhados entre os usuários autorizados.')}catch(e){cloud=null;alert('Não foi possível conectar. Confira o SQL de instalação, a URL e a chave. Detalhe: '+e.message)}}
 async function saveCloud(){if(!cloud)return;let {error}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});if(error)console.error(error)}
+
+const RARA_ALLOWED_EMAIL='rarawellnessclub@gmail.com';
+let raraAuthClient=null;
+function raraShowAuthError(message){const el=document.getElementById('authError');if(el)el.textContent=message||''}
+function raraRevealApp(){document.getElementById('raraAuthGate').classList.remove('visible');document.getElementById('raraApp').style.display='flex'}
+function raraRequireAuth(){document.getElementById('raraAuthGate').classList.add('visible');document.getElementById('raraApp').style.display='none'}
+async function raraGoogleLogin(){
+ const url=document.getElementById('authProjectUrl').value.trim().replace(/\/$/,'');
+ const key=document.getElementById('authAnonKey').value.trim();
+ if(!url||!key){raraShowAuthError('Informe a URL do projeto e a chave pública (anon/publishable) do Supabase.');return}
+ if(!window.supabase?.createClient){raraShowAuthError('Não foi possível carregar o serviço de autenticação. Atualize a página.');return}
+ localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);
+ raraAuthClient=window.supabase.createClient(url,key);
+ raraShowAuthError('');
+ const {error}=await raraAuthClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
+ if(error)raraShowAuthError('Não foi possível iniciar o login: '+error.message);
+}
+async function raraSignOut(){
+ if(!raraAuthClient){const url=localStorage.getItem('rara_sb_url'),key=localStorage.getItem('rara_sb_key');if(url&&key)raraAuthClient=window.supabase.createClient(url,key)}
+ if(raraAuthClient)await raraAuthClient.auth.signOut();
+ raraRequireAuth();
+}
+async function raraInitAuth(){
+ const url=localStorage.getItem('rara_sb_url')||'';
+ const key=localStorage.getItem('rara_sb_key')||'';
+ document.getElementById('authProjectUrl').value=url;
+ document.getElementById('authAnonKey').value=key;
+ if(!url||!key){raraRequireAuth();return}
+ try{
+  raraAuthClient=window.supabase.createClient(url,key);
+  const {data:{session},error}=await raraAuthClient.auth.getSession();
+  if(error)throw error;
+  if(session){
+   const email=(session.user?.email||'').toLowerCase();
+   if(email!==RARA_ALLOWED_EMAIL){await raraAuthClient.auth.signOut();raraRequireAuth();raraShowAuthError('Esta conta Google não está autorizada para o RARA. Entre com rarawellnessclub@gmail.com.');return}
+   raraRevealApp();
+   document.getElementById('syncText').textContent='Login Google ativo · dados ainda locais';
+  }else raraRequireAuth();
+  raraAuthClient.auth.onAuthStateChange(async(event,sessionNow)=>{
+   if(event==='SIGNED_IN'&&sessionNow){
+    const email=(sessionNow.user?.email||'').toLowerCase();
+    if(email!==RARA_ALLOWED_EMAIL){await raraAuthClient.auth.signOut();raraRequireAuth();raraShowAuthError('Conta não autorizada. Use rarawellnessclub@gmail.com.');return}
+    raraRevealApp();
+    document.getElementById('syncText').textContent='Login Google ativo · dados ainda locais';
+   }
+   if(event==='SIGNED_OUT')raraRequireAuth();
+  });
+ }catch(err){raraRequireAuth();raraShowAuthError('Falha ao verificar a sessão: '+err.message)}
+}
+
 renderAll();
 const initialRoute=location.hash.slice(1);if(initialRoute)go(initialRoute,false);
 if(localStorage.getItem('rara_sb_url')&&localStorage.getItem('rara_sb_key')){document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url');document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key');document.getElementById('syncText').textContent='Credenciais salvas · reconecte';}
+raraInitAuth();
 </script></body></html>
