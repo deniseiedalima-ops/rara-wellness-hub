@@ -1,5 +1,9 @@
 # RARA | Management Hub
 
+## Navegação
+- As abas principais funcionam como navegação interna e também atualizam a rota na barra de endereço (`#dashboard`, `#finance`, etc.).
+- As páginas internas de cada evento mantêm a seleção ao adicionar tarefas.
+
 ## O que está incluído
 - Dashboard com contador para The Soft Reset (05/12/2026).
 - Financeiro: receitas, despesas, categorias, status, fluxo mensal e exportação CSV.
