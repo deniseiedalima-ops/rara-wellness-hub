@@ -118,7 +118,8 @@
 const KEY='rara_hub_v1';
 const initial={transactions:[],ideas:[],events:[{id:'soft-reset',name:'The Soft Reset',date:'2026-12-05',place:'Espaço Bougainville · Imperatriz, MA',status:'Em planejamento',description:'Primeiro encontro oficial da RARA Wellness Club.',pages:[{id:'p1',name:'Planejamento geral',tasks:['Confirmar fornecedores e orçamento','Fechar parcerias e expositoras','Definir programação final','Organizar inscrições e pagamentos','Contratar fotografia e cobertura','Preparar kits de Vision Board']},{id:'p2',name:'Experiência & ambientação',tasks:['Planejar aula de alongamento','Alinhar palestra com psicóloga','Organizar atividade de Vision Board','Definir coffee break','Preparar sinalização e decoração']}]}],posts:[]};
 let data=load(), cloud=null, selectedEvent=null, activeEventPage=null, activePage='dashboard', modalType=null;
-data.links ??= [];
+if(!data || typeof data!=='object' || Array.isArray(data)) data=structuredClone(initial);
+for(const key of ['transactions','ideas','events','posts','links']) if(!Array.isArray(data[key])) data[key]=[];
 if(!Array.isArray(data.checklists)) data.checklists=[];
 if(!data.checklists.length) data.checklists=[{id:"general-board",name:"Post-its",tasks:[]}];
 data.checklists=data.checklists.map((board,index)=>({
@@ -138,11 +139,13 @@ function persist(){
   localStorage.setItem(KEY,JSON.stringify(data));
  }catch(err){
   console.error('Falha ao salvar dados localmente:',err);
-  alert('Não foi possível salvar neste navegador. Verifique o espaço disponível e as permissões de armazenamento.');
+  alert('Não foi possível salvar neste navegador. Verifique as permissões e o espaço de armazenamento.');
   return false;
  }
- if(cloud) saveCloud();
- renderAll();
+ if(cloud) saveCloud().catch(err=>console.error('Falha na sincronização:',err));
+ try{renderAll()}catch(err){
+  console.error('Os dados foram salvos, mas houve um erro ao atualizar a tela:',err);
+ }
  return true;
 }
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -173,33 +176,42 @@ if(type==='checktask'){title='Novo post-it';let opts=data.checklists.map(b=>`<op
 body.innerHTML=fields;document.getElementById('modalTitle').textContent=title;document.getElementById('saveModal').onclick=saveModal}
 function val(n){return document.querySelector(`#modalBody [name="${n}"]`)?.value||''}
 function closeModal(){document.getElementById('modal').classList.remove('open')}
-function saveModal(){let id=uid();if(modalType==='transaction')data.transactions.unshift({id,type:val('type'),amount:+val('amount'),description:val('description'),date:val('date'),category:val('category'),status:val('status'),event:val('event'),notes:val('notes')});
-if(modalType==='idea')data.ideas.unshift({id,title:val('title'),category:val('category'),description:val('description'),next:val('next'),created:new Date().toISOString()});
-if(modalType==='event')data.events.push({id,name:val('name'),date:val('date'),place:val('place'),status:val('status'),description:val('description'),pages:[{id:uid(),name:'Planejamento geral',tasks:[]}]});
-if(modalType==='post')data.posts.unshift({id,title:val('title'),format:val('format'),pillar:val('pillar'),date:val('date'),status:val('status'),description:val('description'),link:val('link')});
-if(modalType==='link'){
- const title=val('title').trim();
- let raw=val('url').trim(), parsed;
- if(!title)return alert('Digite um título para este link.');
- if(!raw)return alert('Cole o endereço do link.');
- // Accept links pasted without a protocol, while always storing a complete URL.
- if(!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw)) raw='https://'+raw;
- try{parsed=new URL(raw)}catch{return alert('Esse endereço não parece válido. Confira o link e tente novamente.')}
- if(!['http:','https:'].includes(parsed.protocol))return alert('Por segurança, use um endereço HTTP ou HTTPS.');
- data.links ??= [];
- data.links.unshift({id,title,url:parsed.href,category:val('category')||'Outros',notes:val('notes').trim(),created:new Date().toISOString()});
-}
-if(modalType==='checktask'){
- const taskTitle=val('title').trim();
- if(!taskTitle)return alert('Digite um título para o post-it.');
- const b=data.checklists.find(x=>x.id===val('board'))||data.checklists.find(x=>x.id===selectedChecklistBoard);
- if(!b)return alert('Crie ou selecione uma subaba antes de adicionar um post-it.');
- if(!Array.isArray(b.tasks))b.tasks=[];
- b.tasks.unshift({id,title:taskTitle,description:val('description').trim(),priority:val('priority')||'Média',due:val('due'),done:false,created:new Date().toISOString()});
- selectedChecklistBoard=b.id;
-}
-if(!persist())return;
-closeModal();
+function saveModal(){
+ const id=uid();
+ try{
+  if(modalType==='transaction') data.transactions.unshift({id,type:val('type'),amount:+val('amount'),description:val('description'),date:val('date'),category:val('category'),status:val('status'),event:val('event'),notes:val('notes')});
+  else if(modalType==='idea') data.ideas.unshift({id,title:val('title').trim(),category:val('category'),description:val('description'),next:val('next'),created:new Date().toISOString()});
+  else if(modalType==='event') data.events.push({id,name:val('name').trim(),date:val('date'),place:val('place'),status:val('status'),description:val('description'),pages:[{id:uid(),name:'Planejamento geral',tasks:[]}]});
+  else if(modalType==='post') data.posts.unshift({id,title:val('title').trim(),format:val('format'),pillar:val('pillar'),date:val('date'),status:val('status'),description:val('description'),link:val('link')});
+  else if(modalType==='link'){
+   const title=val('title').trim();
+   let raw=val('url').trim();
+   if(!title){alert('Digite um título para este link.');return}
+   if(!raw){alert('Cole o endereço do link.');return}
+   if(!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw)) raw='https://'+raw;
+   let parsed;
+   try{parsed=new URL(raw)}catch{alert('Esse endereço não parece válido. Confira o link e tente novamente.');return}
+   if(!['http:','https:'].includes(parsed.protocol)){alert('Use um endereço HTTP ou HTTPS.');return}
+   if(!Array.isArray(data.links)) data.links=[];
+   data.links.unshift({id,title,url:parsed.href,category:val('category')||'Outros',notes:val('notes').trim(),created:new Date().toISOString()});
+  }
+  else if(modalType==='checktask'){
+   const title=val('title').trim();
+   if(!title){alert('Digite um título para o post-it.');return}
+   if(!Array.isArray(data.checklists)) data.checklists=[];
+   let board=data.checklists.find(b=>b.id===val('board'))||data.checklists.find(b=>b.id===selectedChecklistBoard);
+   if(!board){alert('Crie ou selecione uma subaba antes de adicionar um post-it.');return}
+   if(!Array.isArray(board.tasks)) board.tasks=[];
+   board.tasks.unshift({id,title,description:val('description').trim(),priority:val('priority')||'Média',due:val('due'),done:false,created:new Date().toISOString()});
+   selectedChecklistBoard=board.id;
+  }
+  // Close first so a rendering problem cannot make the Save button appear unresponsive.
+  closeModal();
+  persist();
+ }catch(err){
+  console.error('Erro ao salvar registro:',err);
+  alert('Ocorreu um erro ao salvar. Atualize a página e tente novamente. Se persistir, abra o console do navegador e envie o erro.');
+ }
 }
 function renderDashboard(){let d=daysTo('2026-12-05');document.getElementById('daysStat').textContent=d;document.getElementById('heroDays').textContent=d;let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('balanceStat').textContent=money(inc-out);document.getElementById('eventsStat').textContent=data.events.length;document.getElementById('postsStat').textContent=data.posts.length;
 let ev=[...data.events].filter(x=>x.date&&x.date>=new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);document.getElementById('upcomingList').innerHTML=ev.length?ev.map(x=>`<div class="item"><div><strong>${esc(x.name)}</strong><small>${dateBR(x.date)} · ${esc(x.place||'Local a definir')}</small></div><span class="pill">${esc(x.status||'Planejamento')}</span></div>`).join(''):'<div class="empty">Nenhum compromisso futuro cadastrado.</div>';
@@ -255,7 +267,10 @@ function renderLinks(){
  document.getElementById('linksGrid').innerHTML=items.map(x=>`<div class="card idea"><div class="tag">${esc(x.category||'Outros')}</div><h3 style="font:500 20px Fraunces;margin:10px 0 7px">${esc(x.title)}</h3>${x.notes?`<p>${esc(x.notes)}</p>`:''}<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px"><a class="btn soft" href="${esc(x.url||'#')}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Abrir link ↗</a><button class="small-link" onclick="copyLink('${x.id}')">copiar endereço</button><button class="small-link" onclick="removeItem('links','${x.id}')">remover</button></div><div class="muted" style="font-size:10px;margin-top:10px;overflow-wrap:anywhere">${esc(x.url)}</div></div>`).join('')||'<div class="empty">Nenhum link encontrado. Adicione seu primeiro acesso importante.</div>';
 }
 function copyLink(id){let item=(data.links||[]).find(x=>x.id===id);if(item&&navigator.clipboard?.writeText)navigator.clipboard.writeText(item.url).then(()=>alert('Link copiado.')).catch(()=>alert(item.url));else if(item)alert(item.url)}
-function renderAll(){renderDashboard();renderFinance();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist()}
+function renderAll(){
+ data.transactions ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.checklists ||= [];
+ renderDashboard();renderFinance();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();
+}
 function exportCSV(){let rows=[['Tipo','Data','Descrição','Categoria','Evento','Status','Valor'],...data.transactions.map(x=>[x.type,x.date,x.description,x.category,x.event,x.status,x.amount])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='rara-financeiro.csv';a.click();URL.revokeObjectURL(a.href)}
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
 function openSettings(){document.getElementById('settingsModal').classList.add('open');document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url')||'';document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key')||''}
