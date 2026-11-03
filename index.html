@@ -227,6 +227,33 @@ function renderFinance(){let ts=data.transactions,filter=document.getElementById
 document.getElementById('transactionsBody').innerHTML=ts.map(x=>`<tr><td>${dateBR(x.date)}</td><td><b>${esc(x.description)}</b><div class="muted">${esc(x.notes||'')}</div></td><td>${esc(x.category)}</td><td>${esc(x.event||'—')}</td><td><span class="pill ${x.status==='Pendente'?'pink':''}">${esc(x.status)}</span></td><td class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</td><td><button class="small-link" onclick="removeItem('transactions','${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum lançamento registrado.</td></tr>';
 let months={};data.transactions.forEach(x=>{let m=(x.date||'').slice(0,7);if(!m)return;months[m]??={in:0,out:0};months[m][x.type==='income'?'in':'out']+=x.amount});document.getElementById('cashflow').innerHTML=Object.keys(months).sort().reverse().map(m=>`<div class="item"><div><strong>${new Date(m+'-02').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</strong><small>Entradas ${money(months[m].in)} · Saídas ${money(months[m].out)}</small></div><b>${money(months[m].in-months[m].out)}</b></div>`).join('')||'<div class="empty">O fluxo de caixa será construído conforme os lançamentos.</div>'}
 function renderIdeas(){let f=document.getElementById('ideaFilter').value,arr=data.ideas.filter(x=>f==='all'||x.category===f);document.getElementById('ideasGrid').innerHTML=arr.map(x=>`<div class="card idea"><div class="tag">${esc(x.category)}</div><h3 style="font:500 20px Fraunces;margin:10px 0 4px">${esc(x.title)}</h3><p>${esc(x.description||'Sem descrição.')}</p>${x.next?`<small class="muted">Próximo passo: ${esc(x.next)}</small>`:''}<div style="margin-top:14px"><button class="small-link" onclick="removeItem('ideas','${x.id}')">remover</button></div></div>`).join('')||'<div class="empty">Ainda não há ideias nessa categoria.</div>'}
+function renderEventDetail(){
+ const root=document.getElementById('eventDetail');
+ const event=data.events.find(x=>x.id===selectedEvent);
+ if(!event){
+  root.innerHTML='<div class="empty">Selecione um evento para abrir seu workspace.</div>';
+  return;
+ }
+ if(!Array.isArray(event.pages)) event.pages=[];
+ if(!event.pages.length) event.pages.push({id:uid(),name:'Planejamento geral',tasks:[]});
+ event.pages.forEach((page,index)=>{
+  if(!page.id) page.id=uid();
+  if(!page.name) page.name=`Página ${index+1}`;
+  if(!Array.isArray(page.tasks)) page.tasks=[];
+ });
+ if(!event.pages.some(page=>page.id===activeEventPage)) activeEventPage=event.pages[0].id;
+ const active=event.pages.find(page=>page.id===activeEventPage)||event.pages[0];
+ const tabs=event.pages.map(page=>`<button class="tab ${page.id===active.id?'active':''}" data-page-id="${esc(page.id)}" onclick="showEventPage('${page.id}')">${esc(page.name)}</button>`).join('');
+ const pages=event.pages.map(page=>{
+  const tasks=page.tasks.map((task,index)=>{
+   const text=typeof task==='string'?task:(task.text||task.title||'');
+   const done=typeof task==='object'&&!!task.done;
+   return `<div class="item"><label style="display:flex;align-items:center;gap:10px;flex:1"><input type="checkbox" ${done?'checked':''} onchange="toggleTask('${event.id}','${page.id}',${index},this.checked)"><span style="${done?'text-decoration:line-through;opacity:.6':''}">${esc(text)}</span></label><button class="small-link" onclick="deleteTask('${event.id}','${page.id}',${index})">excluir</button></div>`;
+  }).join('');
+  return `<section class="eventpage ${page.id===active.id?'':'hidden'}" id="ep-${page.id}"><div class="section-head"><div><div class="eyebrow">PÁGINA DO EVENTO</div><h3 style="font:500 23px Fraunces;margin:5px 0">${esc(page.name)}</h3><span class="muted">${page.tasks.filter(t=>!(typeof t==='object'&&t.done)).length} tarefas pendentes</span></div><button class="btn" onclick="addTask('${event.id}','${page.id}')">＋ Adicionar tarefa</button></div>${tasks||'<div class="empty">Nenhuma tarefa nesta página. Adicione a primeira.</div>'}</section>`;
+ }).join('');
+ root.innerHTML=`<div class="section-head"><div><div class="eyebrow">EVENT WORKSPACE</div><h2 style="font:500 27px Fraunces;margin:5px 0">${esc(event.name)}</h2><span class="muted">${dateBR(event.date)} · ${esc(event.place||'Local a definir')} · ${esc(event.status||'Planejamento')}</span></div><button class="small-link" onclick="addPage('${event.id}')">＋ Nova página</button></div><div class="tabs">${tabs}</div><div id="eventPages">${pages}</div>`;
+}
 function renderEvents(){
  let list=document.getElementById('eventList');
  if(!data.events.some(x=>x.id===selectedEvent)) selectedEvent=data.events[0]?.id||null;
@@ -239,8 +266,8 @@ function showEventPage(id){
  document.querySelectorAll('#eventPages .eventpage').forEach(x=>x.classList.toggle('hidden',x.id!=='ep-'+id));
  document.querySelectorAll('#eventDetail .tabs .tab').forEach(x=>x.classList.toggle('active',x.dataset.pageId===id));
 }
-function addPage(eid){let name=prompt('Nome da nova página:');if(!name)return;let e=data.events.find(x=>x.id===eid);let page={id:uid(),name,tasks:[]};e.pages.push(page);activeEventPage=page.id;persist()}
-function addTask(eid,pid){let text=prompt('Descreva a tarefa:');if(!text)return;let p=data.events.find(x=>x.id===eid).pages.find(x=>x.id===pid);p.tasks.push({text,done:false});activeEventPage=pid;persist()}
+function addPage(eid){let name=prompt('Nome da nova página:');if(!name||!name.trim())return;let e=data.events.find(x=>x.id===eid);if(!e)return;if(!Array.isArray(e.pages))e.pages=[];let page={id:uid(),name:name.trim(),tasks:[]};e.pages.push(page);activeEventPage=page.id;persist()}
+function addTask(eid,pid){let text=prompt('Descreva a tarefa:');if(!text||!text.trim())return;let e=data.events.find(x=>x.id===eid);let p=e?.pages?.find(x=>x.id===pid);if(!p)return;if(!Array.isArray(p.tasks))p.tasks=[];p.tasks.push({text:text.trim(),done:false});activeEventPage=pid;persist()}
 function toggleTask(eid,pid,i,done){let t=data.events.find(x=>x.id===eid).pages.find(x=>x.id===pid).tasks[i];if(typeof t==='string')t={text:t,done};else t.done=done;data.events.find(x=>x.id===eid).pages.find(x=>x.id===pid).tasks[i]=t;persist()}
 function deleteTask(eid,pid,i){data.events.find(x=>x.id===eid).pages.find(x=>x.id===pid).tasks.splice(i,1);persist()}
 function renderInstagram(){let f=document.getElementById('postFilter').value,arr=data.posts.filter(x=>f==='all'||x.status===f);document.getElementById('postIdeas').textContent=data.posts.filter(x=>x.status==='Ideia').length;document.getElementById('postScheduled').textContent=data.posts.filter(x=>x.status==='Agendado').length;document.getElementById('postPublished').textContent=data.posts.filter(x=>x.status==='Publicado').length;let next=data.posts.filter(x=>x.date&&x.date>=new Date().toISOString().slice(0,10)&&x.status!=='Publicado').sort((a,b)=>a.date.localeCompare(b.date))[0];document.getElementById('nextPost').textContent=next?dateBR(next.date):'—';
