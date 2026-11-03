@@ -10,6 +10,8 @@
 - Ideias: mural por categorias.
 - Eventos: cadastro de eventos, páginas internas e checklists por página.
 - Instagram: banco de ideias, formato, pilar, data de publicação, status e link do post.
+- Checklist: subabas/cadernos com post-its, descrição, prioridade, prazo e conclusão; tarefas pendentes aparecem no Dashboard.
+- Links: biblioteca de links salvos com título, URL, categoria, observação, busca, copiar e abrir em nova aba.
 
 ## Abrir localmente
 Abra `index.html` em um navegador. No modo local, os dados ficam salvos no navegador usado.
