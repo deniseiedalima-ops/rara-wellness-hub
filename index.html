@@ -315,7 +315,16 @@ function closeModal(){document.getElementById('modal').classList.remove('open')}
 function saveModal(){
  const id=uid();
  try{
-  if(modalType==='transaction') data.transactions.unshift({id,type:val('type'),amount:+val('amount'),description:val('description'),date:val('date'),category:val('category'),status:val('status'),event:val('event'),notes:val('notes')});
+  if(modalType==='transaction'){
+   const transaction={id,type:val('type'),amount:+val('amount'),description:val('description'),date:val('date'),category:val('category'),status:val('status'),event:val('event'),notes:val('notes')};
+   data.transactions.unshift(transaction);
+   if(transaction.type==='expense'){
+    const noteText=String(transaction.notes||'');
+    const buyer=/\\bMaria\\b/i.test(noteText)?'Maria Eduarda':/\\bDenise\\b/i.test(noteText)?'Denise':'Não identificado';
+    data.purchases ||= [];
+    data.purchases.unshift({id:'purchase-'+id,transactionId:id,item:transaction.description,category:transaction.category,quantity:1,amount:transaction.amount,buyer,purchaseDate:transaction.date,paymentStatus:transaction.status==='Pendente'?'Pendente':'Pago',eventName:transaction.event||'Compra geral',eventId:'',vendor:'',receipt:'',notes:noteText,created:new Date().toISOString(),source:'Criado pelo Financeiro'});
+   }
+  }
   else if(modalType==='purchase'||modalType==='purchase-edit'){
    const item=val('item').trim(),amount=Number(val('amount')||0),buyer=val('buyer'),paymentStatus=val('paymentStatus');
    if(!item){alert('Informe o que foi comprado.');return}
@@ -471,7 +480,16 @@ function toggleTask(eid,pid,i,done){let t=data.events.find(x=>x.id===eid).pages.
 function deleteTask(eid,pid,i){data.events.find(x=>x.id===eid).pages.find(x=>x.id===pid).tasks.splice(i,1);persist()}
 function renderInstagram(){let f=document.getElementById('postFilter').value,arr=data.posts.filter(x=>f==='all'||x.status===f);document.getElementById('postIdeas').textContent=data.posts.filter(x=>x.status==='Ideia').length;document.getElementById('postScheduled').textContent=data.posts.filter(x=>x.status==='Agendado').length;document.getElementById('postPublished').textContent=data.posts.filter(x=>x.status==='Publicado').length;let next=data.posts.filter(x=>x.date&&x.date>=new Date().toISOString().slice(0,10)&&x.status!=='Publicado').sort((a,b)=>a.date.localeCompare(b.date))[0];document.getElementById('nextPost').textContent=next?dateBR(next.date):'—';
 document.getElementById('postsGrid').innerHTML=arr.map(x=>`<div class="card post"><div class="eyebrow">${esc(x.format)} · ${esc(x.pillar)}</div><h4>${esc(x.title)}</h4><p>${esc(x.description||'Sem roteiro ou legenda adicionados.')}</p><div class="item"><span class="pill ${x.status==='Publicado'?'':'blue'}">${esc(x.status)}</span><small>${dateBR(x.date)}</small></div>${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener" class="small-link">abrir publicação ↗</a>`:''}<div style="margin-top:12px"><button class="small-link" onclick="removeItem('posts','${x.id}')">remover</button></div></div>`).join('')||'<div class="empty">Seu calendário de conteúdo começa com uma ideia.</div>'}
-function removeItem(group,id){if(!confirm('Deseja excluir este registro?'))return;data[group]=data[group].filter(x=>x.id!==id);if(group==='events'&&selectedEvent===id)selectedEvent=null;persist()}
+function removeItem(group,id){
+ if(!confirm('Deseja excluir este registro?'))return;
+ if(group==='transactions'){
+  const linked=(data.purchases||[]).find(p=>p.transactionId===id);
+  if(linked)data.purchases=data.purchases.filter(p=>p.id!==linked.id);
+ }
+ data[group]=data[group].filter(x=>x.id!==id);
+ if(group==='events'&&selectedEvent===id)selectedEvent=null;
+ persist();
+}
 function addChecklistBoard(){
  const name=prompt('Nome da nova subaba / caderno:');
  if(!name||!name.trim())return;
@@ -647,6 +665,38 @@ function importSoftResetRegistrationsBatch(){
  return {added:0,incomeAdded:0};
 }
 
+
+function importHistoricalRaraPurchases(){
+ const rows=[
+  {id:'hist-purchase-painel',item:'PAINEL QUADRADO',buyer:'Denise',date:'2026-11-09',amount:170,category:'Evento',notes:'Painel dos patrocínios · Denise'},
+  {id:'hist-purchase-xerox-kits',item:'Impressões xerox kits',buyer:'Denise',date:'2026-11-09',amount:30,category:'Operação',notes:'6 folhas impressas, R$ 5,00 cada · Denise'},
+  {id:'hist-purchase-supercoffee',item:'Sachê supercoffee para kit meninas',buyer:'Denise',date:'2026-11-09',amount:48,category:'Operação',notes:'4 sachês · Denise'},
+  {id:'hist-purchase-presilhas',item:'Presilhas kit Karol/Stella e outra',buyer:'Denise',date:'2026-11-09',amount:30.49,category:'Inscrição',notes:'Denise comprou'},
+  {id:'hist-purchase-piranha-perla',item:'Piranha kit Perla',buyer:'Denise',date:'2026-11-07',amount:16.99,category:'Operação',notes:'Denise comprou na Drogasil'},
+  {id:'hist-purchase-xerox-perla',item:'Xerox papéis Perla',buyer:'Denise',date:'2026-11-07',amount:10,category:'Operação',notes:'Denise comprou as xerox'},
+  {id:'hist-purchase-caixinha-perla',item:'Caixinha kit Perla',buyer:'Maria Eduarda',date:'2026-11-07',amount:44.90,category:'Operação',notes:'Maria comprou para o kit Perla'},
+  {id:'hist-purchase-emporio',item:'Empório Boaretto',buyer:'Maria Eduarda',date:'2026-11-07',amount:34,category:'Operação',notes:'Maria comprou para kit Perla'},
+  {id:'hist-purchase-mercadolivre',item:'Compras Mercado Livre',buyer:'Denise',date:'2026-11-07',amount:858,category:'Fornecedor',notes:'Fornecedor informado; compra realizada por Denise'},
+  {id:'hist-purchase-vasos',item:'Vasos Decorativos bege e azul',buyer:'Denise',date:'2026-11-03',amount:14,category:'Marketing',notes:'Compra realizada por Denise'},
+  {id:'hist-purchase-aluguel',item:'Aluguel da Casa',buyer:'Maria Eduarda',date:'2026-10-27',amount:750,category:'Operação',notes:'Compra realizada por Maria Eduarda; observação original: metade paga por Eduarda'}
+ ];
+ data.transactions ||= [];
+ data.purchases ||= [];
+ let added=0;
+ for(const r of rows){
+  if(data.purchases.some(p=>p.id===r.id))continue;
+  let transaction=data.transactions.find(t=>t.type==='expense'&&Number(t.amount)===r.amount&&String(t.date||'').slice(0,10)===r.date&&String(t.description||'').trim().toLocaleLowerCase('pt-BR')===r.item.toLocaleLowerCase('pt-BR'));
+  if(!transaction){
+   transaction={id:r.id,type:'expense',amount:r.amount,description:r.item,date:r.date,category:r.category,status:'Pago/Recebido',event:'The Soft Reset',notes:r.notes};
+   data.transactions.unshift(transaction);
+  }
+  data.purchases.unshift({id:r.id,transactionId:transaction.id,item:r.item,category:r.category,quantity:1,amount:r.amount,buyer:r.buyer,purchaseDate:r.date,paymentStatus:'Pago',eventName:'The Soft Reset',eventId:'soft-reset',vendor:'',receipt:'',notes:r.notes,created:r.date+'T12:00:00',source:'Recuperado do histórico financeiro informado pela usuária'});
+  added++;
+ }
+ if(added)localStorage.setItem(KEY,JSON.stringify(data));
+ return added;
+}
+
 function renderAll(){
  data.transactions ||= [];data.registrations ||= [];data.purchases ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.partners ||= [];data.checklists ||= [];
  renderDashboard();renderFinance();renderRegistrations();renderPurchases();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();renderPartners();
@@ -655,7 +705,7 @@ function exportCSV(){let rows=[['Tipo','Data','Descrição','Categoria','Evento'
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
 function openSettings(){document.getElementById('settingsModal').classList.add('open');document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url')||'';document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key')||''}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
-async function connectCloud(){let url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim(),email=document.getElementById('sbEmail').value.trim(),password=document.getElementById('sbPassword').value;if(!url||!key||!email||!password)return alert('Informe URL, chave pública, e-mail e senha.');localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);try{cloud=window.supabase.createClient(url,key);let {error:authError}=await cloud.auth.signInWithPassword({email,password});if(authError)throw authError;let {data:row,error}=await cloud.from('rara_workspace').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(row?.payload){data=row.payload;localStorage.setItem(KEY,JSON.stringify(data))}else{let {error:upErr}=await cloud.from('rara_workspace').upsert({id:'main',payload:data});if(upErr)throw upErr}const importResult=importSoftResetRegistrationsBatch();if(importResult.added){const {error:mergeError}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});if(mergeError)throw mergeError}cloud.channel('rara-live').on('postgres_changes',{event:'UPDATE',schema:'public',table:'rara_workspace',filter:'id=eq.main'},payload=>{if(payload.new?.payload){data=payload.new.payload;localStorage.setItem(KEY,JSON.stringify(data));renderAll()}}).subscribe();document.getElementById('syncDot').classList.add('on');document.getElementById('syncText').textContent='Conectado · Supabase';closeSettings();renderAll();alert('Conectado. Os dados serão compartilhados entre os usuários autorizados.')}catch(e){cloud=null;alert('Não foi possível conectar. Confira o SQL de instalação, a URL e a chave. Detalhe: '+e.message)}}
+async function connectCloud(){let url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim(),email=document.getElementById('sbEmail').value.trim(),password=document.getElementById('sbPassword').value;if(!url||!key||!email||!password)return alert('Informe URL, chave pública, e-mail e senha.');localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);try{cloud=window.supabase.createClient(url,key);let {error:authError}=await cloud.auth.signInWithPassword({email,password});if(authError)throw authError;let {data:row,error}=await cloud.from('rara_workspace').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(row?.payload){data=row.payload;localStorage.setItem(KEY,JSON.stringify(data))}else{let {error:upErr}=await cloud.from('rara_workspace').upsert({id:'main',payload:data});if(upErr)throw upErr}const importResult=importSoftResetRegistrationsBatch();const historicalAdded=importHistoricalRaraPurchases();if(importResult.added||historicalAdded){const {error:mergeError}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});if(mergeError)throw mergeError}cloud.channel('rara-live').on('postgres_changes',{event:'UPDATE',schema:'public',table:'rara_workspace',filter:'id=eq.main'},payload=>{if(payload.new?.payload){data=payload.new.payload;localStorage.setItem(KEY,JSON.stringify(data));renderAll()}}).subscribe();document.getElementById('syncDot').classList.add('on');document.getElementById('syncText').textContent='Conectado · Supabase';closeSettings();renderAll();alert('Conectado. Os dados serão compartilhados entre os usuários autorizados.')}catch(e){cloud=null;alert('Não foi possível conectar. Confira o SQL de instalação, a URL e a chave. Detalhe: '+e.message)}}
 async function saveCloud(){
  if(!cloud)return;
  const {error}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});
@@ -668,6 +718,7 @@ async function saveCloud(){
 }
 
 const softResetImportResult=importSoftResetRegistrationsBatch();
+const historicalPurchaseImportCount=importHistoricalRaraPurchases();
 renderAll();
 const initialRoute=location.hash.slice(1);if(initialRoute)go(initialRoute,false);
 if(localStorage.getItem('rara_sb_url')&&localStorage.getItem('rara_sb_key')){document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url');document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key');document.getElementById('syncText').textContent='Credenciais salvas · reconecte';}
