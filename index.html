@@ -601,6 +601,52 @@ function exportPurchasesPDF(){
  w.document.write(`<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><title>Investimentos RARA</title><style>body{font:12px Arial;color:#344b55;padding:28px}h1{font:26px Georgia}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}th{background:#f3eee8}</style></head><body onload="setTimeout(()=>window.print(),250)"><h1>rara · wellness club</h1><h2>Compras e investimentos</h2><p>Investimento pago: ${fmt(sum(paid))}</p><p>Pago por Denise (inclui metade do compartilhado): ${fmt(d)} · Pago por Maria Eduarda: ${fmt(m)}</p><p>Acerto para 50/50: ${fmt(Math.abs(d-m)/2)} de ${d>m?'Maria Eduarda para Denise':m>d?'Denise para Maria Eduarda':'nenhum'}</p><table><thead><tr><th>Item</th><th>Comprado por</th><th>Data</th><th>Fornecedor</th><th>Status</th><th>Valor</th></tr></thead><tbody>${body}</tbody></table></body></html>`);
  w.document.close();
 }
+
+function importSoftResetRegistrationsBatch(){
+ const rows=[
+  {id:'softreset-import-mirelle',attendee:'Mirelle Barreto Rabelo',email:'Mirellebrrt@hotmail.com',phone:'99991559330',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 20-25 · Restrição alimentar informada: refrigerante e açúcar refinado'},
+  {id:'softreset-import-marcela',attendee:'Marcela Marques Lima',email:'marcelamarques.jus@gmail.com',phone:'99981479092',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 26-35'},
+  {id:'softreset-import-viviany',attendee:'Viviany Victoria Leão de Oliveira',email:'vicv0585@gmail.com',phone:'99992195594',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 20-25'},
+  {id:'softreset-import-isabella',attendee:'Maria Isabella Costa',email:'isabellamercadodigital@gmail.com',phone:'99991345227',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 20-25'},
+  {id:'softreset-import-eduarda',attendee:'Eduarda Carvalho',email:'eeduardacarvalho@outlook.com',phone:'99981006170',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 26-35'},
+  {id:'softreset-import-mariana',attendee:'Mariana Freitas dos Reis',email:'marianafreitas_reis@hotmail.com',phone:'99982458377',date:'2026-11-06',amount:100,status:'Pendente',notes:'Faixa etária: 26-35'},
+  {id:'softreset-import-marinalva',attendee:'Marinalva Texeira da Silva Queiroz',email:'marinalvalb@gmail.com',phone:'99991784474',date:'2026-11-08',amount:100,status:'Pendente',notes:'Faixa etária: 46+'},
+  {id:'softreset-import-yasmin',attendee:'Yasmin Kelly Lima Lopes',email:'yasminlopes.2000@hotmail.com',phone:'98981907354',date:'2026-11-09',amount:100,status:'Pendente',notes:'Faixa etária: 26-35'},
+  {id:'softreset-import-virginia',attendee:'Virgínia Magre Guerra Pinto',email:'deliciaspintodeliciasdavirginia13@gmail.com',phone:'99991238421',date:'2026-11-10',amount:100,status:'Pendente',notes:'Faixa etária: 46+'},
+  {id:'softreset-paid-yjaciara',attendee:'Yjaciara Lopes de Brito',date:'2026-11-05',amount:80,status:'Pago'},
+  {id:'softreset-paid-ana-carolina',attendee:'Ana Carolina Neves Nogueira do Ó Loiola',date:'2026-11-05',amount:80,status:'Pago'},
+  {id:'softreset-paid-francisca-nathalya',attendee:'Francisca Nathalya Brandão Souza',date:'2026-11-05',amount:80,status:'Pago'},
+  {id:'softreset-paid-rafaela',attendee:'Rafaela Lima Barros',date:'2026-11-05',amount:80,status:'Pago'},
+  {id:'softreset-paid-maria-francisca',attendee:'Maria Francisca Lopes de Brito',date:'2026-11-09',amount:80,status:'Pago'},
+  {id:'softreset-paid-maria-ieda',attendee:'Maria Ieda Lopes de Brito',date:'2026-11-09',amount:80,status:'Pago'},
+  {id:'softreset-paid-ana-julia',attendee:'Ana Júlia Albuquerque Brito',date:'2026-11-09',amount:80,status:'Pago'}
+ ];
+ data.registrations ||= [];
+ data.transactions ||= [];
+ const existingIds=new Set(data.registrations.map(r=>r.id));
+ const existingNames=new Set(data.registrations.map(r=>(r.attendee||'').trim().toLocaleLowerCase('pt-BR')));
+ let added=0, incomeAdded=0;
+ for(const row of rows){
+  if(existingIds.has(row.id)||existingNames.has(row.attendee.trim().toLocaleLowerCase('pt-BR'))) continue;
+  const rec={...row,eventId:'soft-reset',eventName:'The Soft Reset',lot:row.amount===80?'Lote promocional':'Primeiros Momentos',paymentDate:row.status==='Pago'?row.date:'',registrationDate:row.date,paymentStatus:row.status,paymentMethod:'Pix',created:row.date+'T12:00:00',transactionId:null,source:'Formulário/lista de inscrições'};
+  if(row.status==='Pago'){
+   const tid='income-'+row.id;
+   rec.transactionId=tid;
+   data.transactions.unshift({id:tid,type:'income',amount:row.amount,description:`Inscrição — ${row.attendee} (${rec.lot})`,date:row.date,category:'Inscrição',status:'Pago/Recebido',event:'The Soft Reset',notes:'Pagamento informado na lista de inscrições · Pix'});
+   incomeAdded++;
+  }
+  data.registrations.unshift(rec);
+  existingIds.add(row.id);
+  existingNames.add(row.attendee.trim().toLocaleLowerCase('pt-BR'));
+  added++;
+ }
+ if(added){
+  localStorage.setItem(KEY,JSON.stringify(data));
+  return {added,incomeAdded};
+ }
+ return {added:0,incomeAdded:0};
+}
+
 function renderAll(){
  data.transactions ||= [];data.registrations ||= [];data.purchases ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.partners ||= [];data.checklists ||= [];
  renderDashboard();renderFinance();renderRegistrations();renderPurchases();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();renderPartners();
@@ -609,7 +655,7 @@ function exportCSV(){let rows=[['Tipo','Data','Descrição','Categoria','Evento'
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
 function openSettings(){document.getElementById('settingsModal').classList.add('open');document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url')||'';document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key')||''}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
-async function connectCloud(){let url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim(),email=document.getElementById('sbEmail').value.trim(),password=document.getElementById('sbPassword').value;if(!url||!key||!email||!password)return alert('Informe URL, chave pública, e-mail e senha.');localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);try{cloud=window.supabase.createClient(url,key);let {error:authError}=await cloud.auth.signInWithPassword({email,password});if(authError)throw authError;let {data:row,error}=await cloud.from('rara_workspace').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(row?.payload){data=row.payload;localStorage.setItem(KEY,JSON.stringify(data))}else{let {error:upErr}=await cloud.from('rara_workspace').upsert({id:'main',payload:data});if(upErr)throw upErr}cloud.channel('rara-live').on('postgres_changes',{event:'UPDATE',schema:'public',table:'rara_workspace',filter:'id=eq.main'},payload=>{if(payload.new?.payload){data=payload.new.payload;localStorage.setItem(KEY,JSON.stringify(data));renderAll()}}).subscribe();document.getElementById('syncDot').classList.add('on');document.getElementById('syncText').textContent='Conectado · Supabase';closeSettings();renderAll();alert('Conectado. Os dados serão compartilhados entre os usuários autorizados.')}catch(e){cloud=null;alert('Não foi possível conectar. Confira o SQL de instalação, a URL e a chave. Detalhe: '+e.message)}}
+async function connectCloud(){let url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim(),email=document.getElementById('sbEmail').value.trim(),password=document.getElementById('sbPassword').value;if(!url||!key||!email||!password)return alert('Informe URL, chave pública, e-mail e senha.');localStorage.setItem('rara_sb_url',url);localStorage.setItem('rara_sb_key',key);try{cloud=window.supabase.createClient(url,key);let {error:authError}=await cloud.auth.signInWithPassword({email,password});if(authError)throw authError;let {data:row,error}=await cloud.from('rara_workspace').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(row?.payload){data=row.payload;localStorage.setItem(KEY,JSON.stringify(data))}else{let {error:upErr}=await cloud.from('rara_workspace').upsert({id:'main',payload:data});if(upErr)throw upErr}const importResult=importSoftResetRegistrationsBatch();if(importResult.added){const {error:mergeError}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});if(mergeError)throw mergeError}cloud.channel('rara-live').on('postgres_changes',{event:'UPDATE',schema:'public',table:'rara_workspace',filter:'id=eq.main'},payload=>{if(payload.new?.payload){data=payload.new.payload;localStorage.setItem(KEY,JSON.stringify(data));renderAll()}}).subscribe();document.getElementById('syncDot').classList.add('on');document.getElementById('syncText').textContent='Conectado · Supabase';closeSettings();renderAll();alert('Conectado. Os dados serão compartilhados entre os usuários autorizados.')}catch(e){cloud=null;alert('Não foi possível conectar. Confira o SQL de instalação, a URL e a chave. Detalhe: '+e.message)}}
 async function saveCloud(){
  if(!cloud)return;
  const {error}=await cloud.from('rara_workspace').upsert({id:'main',payload:data,updated_at:new Date().toISOString()});
@@ -621,6 +667,7 @@ async function saveCloud(){
  document.getElementById('syncText').textContent='Sincronizado · espaço RARA compartilhado';
 }
 
+const softResetImportResult=importSoftResetRegistrationsBatch();
 renderAll();
 const initialRoute=location.hash.slice(1);if(initialRoute)go(initialRoute,false);
 if(localStorage.getItem('rara_sb_url')&&localStorage.getItem('rara_sb_key')){document.getElementById('sbUrl').value=localStorage.getItem('rara_sb_url');document.getElementById('sbKey').value=localStorage.getItem('rara_sb_key');document.getElementById('syncText').textContent='Credenciais salvas · reconecte';}
