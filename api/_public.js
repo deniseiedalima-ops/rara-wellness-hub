@@ -68,18 +68,66 @@ function pickLot(event, registrations) {
   }
   return null;
 }
+const Q_TYPES = ['section', 'name', 'phone', 'email', 'text', 'textarea', 'number', 'select', 'multi', 'yesno', 'declaration', 'info'];
+const IDENTITY = ['name', 'phone', 'email'];
+const IDENTITY_DEFAULT = { name: 'Seu nome completo', phone: 'Qual seu número de WhatsApp?', email: 'Qual seu melhor e-mail?' };
+function publicQuestions(list) {
+  const seen = new Set();
+  const out = (Array.isArray(list) ? list : []).filter(q => q && q.label).slice(0, 80).map(q => {
+    let type = Q_TYPES.includes(q.type) ? q.type : 'text';
+    if (IDENTITY.includes(type)) { if (seen.has(type)) type = 'text'; else seen.add(type); }
+    const out = { id: String(q.id), label: String(q.label).slice(0, 3000), type, required: IDENTITY.includes(type) || (!['info', 'section'].includes(type) && !!q.required) };
+    if (type === 'section') out.desc = String(q.desc || '').slice(0, 3000);
+    out.options = type === 'yesno' ? ['Sim', 'Não'] : ['select', 'multi'].includes(type) ? String(q.options || '').split(';').map(x => x.trim()).filter(Boolean).slice(0, 40) : [];
+    if (!IDENTITY.includes(type) && q.showIf && q.showIf.q && q.showIf.value) out.showIf = { q: String(q.showIf.q), value: String(q.showIf.value).trim() };
+    return out;
+  });
+  // Formulários antigos sem nome/WhatsApp/e-mail ganham essas perguntas no início.
+  const missing = IDENTITY.filter(t => !seen.has(t)).map(t => ({ id: '_' + t, label: IDENTITY_DEFAULT[t], type: t, required: true, options: [] }));
+  return [...missing, ...out];
+}
+// ---------- cupons ----------
+function couponUses(event, registrations, code) {
+  const now = Date.now();
+  return registrations.filter(r => {
+    const x = r.obj || {};
+    if (x.eventId !== event.id || String(x.couponCode || '').toUpperCase() !== code) return false;
+    return x.paymentStatus === 'Pago' || (x.paymentStatus === 'Pendente' && x.created && now - Date.parse(x.created) < PENDING_HOLD_MIN * 60000);
+  }).length;
+}
+// Devolve { coupon, price, discount } ou lança erro amigável.
+function applyCoupon(event, registrations, lot, rawCode) {
+  const code = String(rawCode || '').trim().toUpperCase();
+  if (!code) return { coupon: null, price: lot.price, discount: 0 };
+  const list = (event.form && Array.isArray(event.form.coupons)) ? event.form.coupons : [];
+  const c = list.find(x => String(x.code || '').toUpperCase() === code);
+  if (!c || !(Number(c.value) > 0)) throw httpError(400, 'Cupom inválido. Confira o código e tente novamente.');
+  if (c.until && todayBR() > c.until) throw httpError(400, 'Este cupom expirou.');
+  if (Number(c.limit) > 0 && couponUses(event, registrations, code) >= Number(c.limit)) throw httpError(400, 'Este cupom já atingiu o limite de usos.');
+  const raw = c.kind === 'fixed' ? Number(c.value) : lot.price * Math.min(100, Number(c.value)) / 100;
+  const discount = Math.min(lot.price, Math.round(raw * 100) / 100);
+  const price = Math.round((lot.price - discount) * 100) / 100;
+  return { coupon: { code, kind: c.kind === 'fixed' ? 'fixed' : 'percent', value: Number(c.value) }, price, discount };
+}
+// Uma pergunta aparece se não tiver condição, ou se a pergunta-mãe estiver visível com a resposta escolhida.
+function isVisible(q, byId, answers, depth = 0) {
+  if (!q.showIf) return true;
+  const parent = byId[q.showIf.q];
+  if (!parent || depth > 20 || !isVisible(parent, byId, answers, depth + 1)) return false;
+  const a = answers[parent.id];
+  const want = q.showIf.value.toLocaleLowerCase('pt-BR');
+  if (Array.isArray(a)) return a.some(x => String(x).toLocaleLowerCase('pt-BR') === want);
+  return String(a == null ? '' : a).trim().toLocaleLowerCase('pt-BR') === want;
+}
 function publicEventView(event, lot) {
   const f = event.form || {};
   return {
     name: event.name, date: event.date || '', place: event.place || '',
     description: f.pageText || event.description || '',
     slug: slugify(f.slug || event.name),
+    hasCoupons: Array.isArray(f.coupons) && f.coupons.length > 0,
     lot: lot ? { id: lot.id, name: lot.name, price: lot.price, until: lot.until, lastSpots: lot.remaining != null && lot.remaining <= 5 ? lot.remaining : null } : null,
-    questions: (Array.isArray(f.questions) ? f.questions : []).filter(q => q && q.label).map(q => ({
-      id: String(q.id), label: String(q.label).slice(0, 200), type: ['text', 'textarea', 'select'].includes(q.type) ? q.type : 'text',
-      options: q.type === 'select' ? String(q.options || '').split(';').map(s => s.trim()).filter(Boolean).slice(0, 30) : [],
-      required: !!q.required
-    })),
+    questions: publicQuestions(f.questions),
     successMessage: f.successMessage || '',
     groupLink: /^https?:\/\//.test(f.groupLink || '') ? f.groupLink : ''
   };
@@ -154,6 +202,6 @@ function methodLabel(p) {
 const money = n => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 module.exports = {
-  publicAccount, todayBR, slugify, loadType, findEventBySlug, pickLot, publicEventView, countsByLot,
+  publicAccount, publicQuestions, isVisible, applyCoupon, IDENTITY, todayBR, slugify, loadType, findEventBySlug, pickLot, publicEventView, countsByLot,
   saveRecord, findRecord, softDelete, mp, isTestToken, siteOrigin, methodLabel, money, fmtWhen
 };

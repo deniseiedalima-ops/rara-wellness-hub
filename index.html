@@ -18,8 +18,10 @@
 .partner-edit-btn{padding:8px 15px!important;font-size:13px!important;min-height:36px}
 
 .userchip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fffdfa;border-radius:30px;padding:3px 12px 3px 3px;color:var(--ink);font-size:12px}.userchip:hover{background:var(--blue2)}.who-line{font-size:10px;color:#a3a9a6;margin-top:4px}.who-btn{min-width:150px;padding:14px 18px;font-size:14px}
-.signup-box{background:linear-gradient(120deg,#fffdfb,#eef4f6);border:1px solid #dce9ed;border-radius:14px;padding:15px 16px;margin:4px 0 16px}.signup-box .link{font-size:11px;color:#66818b;overflow-wrap:anywhere;margin-top:6px}.row-grid{display:grid;gap:7px;align-items:end;margin-bottom:8px}.row-grid input,.row-grid select{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.row-grid .mini{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#8b9697;display:block;margin-bottom:3px}.lot-row{grid-template-columns:1.5fr .8fr .7fr 1fr 28px}.q-row{grid-template-columns:1.6fr .9fr 1.2fr 58px 28px}.rm{border:0;background:transparent;color:#b17d7c;font-size:18px;padding:6px 0}.subhead{font:500 16px Fraunces,serif;margin:20px 0 4px}
+.signup-box{background:linear-gradient(120deg,#fffdfb,#eef4f6);border:1px solid #dce9ed;border-radius:14px;padding:15px 16px;margin:4px 0 16px}.signup-box .link{font-size:11px;color:#66818b;overflow-wrap:anywhere;margin-top:6px}.row-grid{display:grid;gap:7px;align-items:end;margin-bottom:8px}.row-grid input,.row-grid select{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.row-grid .mini{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#8b9697;display:block;margin-bottom:3px}.lot-row{grid-template-columns:1.5fr .8fr .7fr 1fr 28px}.q-row{grid-template-columns:1.6fr .9fr 1.2fr 58px 28px}.rm{border:0;background:transparent;color:#b17d7c;font-size:18px;padding:6px 0}.subhead{font:500 16px Fraunces,serif;margin:20px 0 4px}.q-card{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;background:#fffdfa}.q-card textarea,.q-card input,.q-card select{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;color:var(--ink);width:100%;font-size:12px}.q-card textarea{min-height:38px;resize:vertical}.q-card .qline{display:grid;grid-template-columns:1.1fr 1.4fr auto;gap:7px;align-items:end;margin-top:7px}.q-card .qline2{display:grid;grid-template-columns:1.3fr 1fr auto;gap:7px;align-items:end;margin-top:7px}.q-card .mini{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#8b9697;display:block;margin-bottom:3px}.q-tools{display:flex;gap:2px}.q-tools button{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:30px;color:#66818b}.q-tools button.rm{color:#b17d7c}.fixed-fields{font-size:11px;color:#66818b;background:var(--blue2);border-radius:10px;padding:9px 11px;margin-top:8px}
+@media(max-width:650px){.q-card .qline,.q-card .qline2{grid-template-columns:1fr}}
 @media(max-width:650px){.lot-row,.q-row{grid-template-columns:1fr 1fr}}
+.reg-filters{background:#fffdfa;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.reg-filters label{display:flex;align-items:center;gap:6px}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -64,6 +66,10 @@
    <div class="card"><div class="section-head"><h3>Checklist em andamento</h3><span class="pill blue" id="taskCount">0 tarefas</span></div><div id="taskPreview"></div></div>
   </div>
  </div>
+ <div class="card" style="margin-top:16px" id="dashRegCard"><div class="section-head"><div><h3>Inscrições</h3><span class="muted">Resumo de todos os eventos · online e manuais</span></div><button class="small-link" onclick="go('registrations')">abrir inscrições ↗</button></div>
+  <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px"><div><div class="stat-label">Inscritas</div><div class="stat-value" id="dashRegTotal" style="font-size:23px">0</div></div><div><div class="stat-label">Pagas</div><div class="stat-value amount-in" id="dashRegPaid" style="font-size:23px">0</div></div><div><div class="stat-label">Pendentes</div><div class="stat-value" id="dashRegPending" style="font-size:23px">0</div></div><div><div class="stat-label">Recebido em inscrições</div><div class="stat-value amount-in" id="dashRegMoney" style="font-size:23px">R$ 0</div></div></div>
+  <div class="grid dashgrid" style="gap:14px"><div><div class="eyebrow" style="margin-bottom:6px">Últimas inscrições</div><div id="dashRegLatest" class="list"></div></div><div><div class="eyebrow" style="margin-bottom:6px">Por evento</div><div id="dashRegEvents" class="list"></div></div></div>
+ </div>
  <div class="card" style="margin-top:16px"><div class="section-head"><div><h3>To-do da RARA</h3><span class="muted">Tarefas pendentes por prioridade</span></div><button class="small-link" onclick="go('checklist')">abrir checklist ↗</button></div>
  <div class="grid stats" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px"><div><span class="pill pink">Urgente</span><div class="stat-value" id="dashUrgent" style="font-size:23px">0</div></div><div><span class="pill blue">Média</span><div class="stat-value" id="dashMedium" style="font-size:23px">0</div></div><div><span class="pill">Baixa</span><div class="stat-value" id="dashLow" style="font-size:23px">0</div></div></div><div id="dashboardChecklist"></div></div>
 </section>
@@ -99,6 +105,16 @@
   <button class="btn soft" onclick="exportRegistrationsPDF()">Baixar inscrições em PDF</button>
   <select id="registrationEventFilter" onchange="renderRegistrations()" style="max-width:220px"><option value="all">Todos os eventos</option></select>
   <input id="registrationSearch" type="search" placeholder="Buscar inscrita..." oninput="renderRegistrations()" style="max-width:220px">
+ </div>
+ <div class="toolbar reg-filters">
+  <select id="regStatus" onchange="renderRegistrations()" style="max-width:160px"><option value="all">Todos os status</option><option>Pago</option><option>Pendente</option><option>Reembolsado</option></select>
+  <select id="regOrigin" onchange="renderRegistrations()" style="max-width:170px"><option value="all">Online e manuais</option><option value="online">Só online</option><option value="manual">Só manuais</option></select>
+  <label class="muted" style="font-size:11px">De <input id="regFrom" type="date" onchange="renderRegistrations()" style="max-width:150px"></label>
+  <label class="muted" style="font-size:11px">até <input id="regTo" type="date" onchange="renderRegistrations()" style="max-width:150px"></label>
+  <label class="muted" style="font-size:11px">Valor de <input id="regMin" type="number" min="0" step="0.01" placeholder="R$" oninput="renderRegistrations()" style="max-width:90px"></label>
+  <label class="muted" style="font-size:11px">a <input id="regMax" type="number" min="0" step="0.01" placeholder="R$" oninput="renderRegistrations()" style="max-width:90px"></label>
+  <select id="regSort" onchange="renderRegistrations()" style="max-width:170px"><option value="recent">Mais recentes</option><option value="old">Mais antigas</option><option value="high">Maior valor</option><option value="low">Menor valor</option><option value="name">Nome (A–Z)</option></select>
+  <button class="small-link" onclick="clearRegFilters()">limpar filtros</button>
  </div>
  <div class="grid stats">
   <div class="card"><div class="stat-label">Inscrições registradas</div><div class="stat-value" id="registrationCount">0</div></div>
@@ -339,17 +355,19 @@ if(type==='eventform'){
  <label class="checkline" style="border:0"><input type="checkbox" name="enabled" ${fm.enabled?'checked':''}> <span><b>Inscrições abertas</b> — a página fica disponível para as clientes</span></label>
  ${f('Endereço da página','slug','text',fm.slug||slugify(ev.name),'placeholder="ex.: the-soft-reset"')}
  <div class="muted" style="font-size:11px;margin:-6px 0 6px">${esc(location.origin)}/inscricao/<b id="slugPreview">${esc(fm.slug||slugify(ev.name))}</b></div>
- ${f('Texto de apresentação do evento','pageText','textarea',fm.pageText??ev.description??'','placeholder="O que vai acontecer, o que está incluso, horário…"')}
+ ${f('Mensagem inicial (aparece no topo da página, antes das perguntas)','pageText','textarea',fm.pageText??defaultIntro(ev),'style="min-height:260px" placeholder="O que vai acontecer, o que está incluso, horário…"')}
  <div class="subhead">Lotes</div><div class="muted" style="font-size:11px;line-height:1.6">Na ordem: a página mostra o primeiro lote que ainda tem vagas e está dentro da data. Ao esgotar ou vencer, passa sozinha para o próximo. Deixe vagas ou data em branco para não limitar.</div>
  <div id="lotRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addLotRow()">＋ adicionar lote</button>
- <div class="subhead">Perguntas extras deste evento</div><div class="muted" style="font-size:11px;line-height:1.6">O formulário já pede: nome, WhatsApp, e-mail, faixa etária, restrição alimentar e como conheceu a RARA. Para escolha, separe as opções com ponto e vírgula (;).</div>
- <div id="qRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addQuestionRow()">＋ adicionar pergunta</button>
+ <div class="subhead">Cupons de desconto</div><div class="muted" style="font-size:11px;line-height:1.6">A cliente digita o cupom na página e o valor do pagamento no Mercado Pago já cai com o desconto. Deixe limite e validade em branco para não limitar. Cupom de 100% confirma a vaga como cortesia, sem pagamento.</div>
+ <div id="couponRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addCouponRow()">＋ adicionar cupom</button>
+ <div class="subhead">Formulário</div><div class="fixed-fields">Monte o formulário com seções e perguntas: edite os textos, apague, mude a ordem ou crie perguntas que só aparecem dependendo de uma resposta anterior. As perguntas de <b>nome, WhatsApp e e-mail</b> podem ter o texto e a posição alterados, mas não podem ser removidas — o pagamento precisa delas.</div><div id="qRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addQuestionRow()">＋ adicionar pergunta</button> &nbsp; <button type="button" class="small-link" onclick="if(confirm('Substituir as perguntas atuais pelo modelo padrão da RARA?')){document.getElementById('qRows').innerHTML='';defaultQuestions(data.events.find(e=>e.id===window.editingFormEventId)||{}).forEach(addQuestionRow)}">usar modelo padrão</button>
  <div class="subhead">Depois do pagamento</div>
  ${f('Mensagem de confirmação (opcional)','successMessage','textarea',fm.successMessage||'','placeholder="Ex.: Em breve enviaremos as orientações pelo WhatsApp."')}
  ${f('Link do grupo de WhatsApp das participantes (opcional)','groupLink','url',fm.groupLink||'','placeholder="https://chat.whatsapp.com/..."')}`;
  body.innerHTML=fields;document.getElementById('modalTitle').textContent=title;document.getElementById('saveModal').onclick=saveModal;
  (fm.lots&&fm.lots.length?fm.lots:[{}]).forEach(addLotRow);
- (fm.questions||[]).forEach(addQuestionRow);
+ (fm.coupons||[]).forEach(addCouponRow);
+ (fm.questions?fm.questions:defaultQuestions(ev)).forEach(addQuestionRow);
  body.querySelector('[name="slug"]').addEventListener('input',e=>{document.getElementById('slugPreview').textContent=slugify(e.target.value)});
  return;
 }
@@ -459,9 +477,14 @@ function saveModal(){
    for(const l of lots){if(!l.name){alert('Dê um nome a cada lote.');return}if(!(l.price>0)){alert(`Informe o preço do lote "${l.name}".`);return}}
    const enabled=!!document.querySelector('#modalBody [name="enabled"]').checked;
    if(enabled&&!lots.length){alert('Cadastre pelo menos um lote para abrir as inscrições.');return}
-   const questions=[...document.querySelectorAll('#qRows .q-row')].map(r=>({id:r.dataset.id||uid(),label:r.querySelector('[data-k=label]').value.trim(),type:r.querySelector('[data-k=type]').value,options:r.querySelector('[data-k=options]').value.trim(),required:r.querySelector('[data-k=required]').checked})).filter(q=>q.label);
-   for(const q of questions)if(q.type==='select'&&!q.options){alert(`Informe as opções da pergunta "${q.label}" (separadas por ;).`);return}
-   ev.form={enabled,slug,pageText:val('pageText').trim(),lots,questions,successMessage:val('successMessage').trim(),groupLink:val('groupLink').trim()};
+   const questions=readQuestionRows();
+   for(const t of ['name','phone','email']){const n=questions.filter(q=>q.type===t).length;if(n!==1){alert(`O formulário precisa ter exatamente uma pergunta do tipo "${Q_TYPES.find(x=>x[0]===t)[1]}".`);return}}
+   const coupons=readCouponRows();
+   for(const c of coupons){if(!/^[A-Z0-9_-]{2,30}$/.test(c.code)){alert(`Código de cupom inválido: "${c.code}". Use letras, números, - ou _ (sem espaços).`);return}if(!(c.value>0)){alert(`Informe o desconto do cupom ${c.code}.`);return}if(c.kind==='percent'&&c.value>100){alert(`O cupom ${c.code} não pode passar de 100%.`);return}}
+   if(new Set(coupons.map(c=>c.code)).size!==coupons.length){alert('Há cupons com o mesmo código.');return}
+   const bad=questions.find(q=>['select','multi'].includes(q.type)&&!q.options);
+   if(bad){alert(`Informe as opções da pergunta "${bad.label.slice(0,60)}" (separadas por ;).`);return}
+   ev.form={enabled,slug,pageText:val('pageText').trim(),lots,coupons,questions,successMessage:val('successMessage').trim(),groupLink:val('groupLink').trim()};
    window.editingFormEventId=null;
   }
   else if(modalType==='checktask'){
@@ -482,7 +505,17 @@ function saveModal(){
   alert('Ocorreu um erro ao salvar. Atualize a página e tente novamente. Se persistir, abra o console do navegador e envie o erro.');
  }
 }
-function renderDashboard(){let d=daysTo('2026-12-05');document.getElementById('daysStat').textContent=d;document.getElementById('heroDays').textContent=d;let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('balanceStat').textContent=money(inc-out);document.getElementById('eventsStat').textContent=data.events.length;document.getElementById('postsStat').textContent=data.posts.length;
+function renderDashRegistrations(){
+ const regs=data.registrations||[];const paid=regs.filter(r=>r.paymentStatus==='Pago');
+ const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+ set('dashRegTotal',regs.length);set('dashRegPaid',paid.length);set('dashRegPending',regs.filter(r=>(r.paymentStatus||'Pendente')==='Pendente').length);
+ set('dashRegMoney',money(paid.reduce((a,r)=>a+Number(r.amount||0),0)));
+ const latest=regs.slice().sort((a,b)=>String(b.createdAt||b.created||regDate(b)).localeCompare(String(a.createdAt||a.created||regDate(a)))).slice(0,5);
+ const L=document.getElementById('dashRegLatest');if(L)L.innerHTML=latest.map(r=>`<div class="item"><div><strong>${esc(r.attendee)}</strong><small>${esc(r.eventName||'')} · ${esc(r.lot||'')}${r.source==='Inscrição online'?' · online':''}</small></div><span class="pill ${r.paymentStatus==='Pago'?'':'pink'}">${esc(r.paymentStatus||'Pendente')} · ${money(r.amount)}</span></div>`).join('')||'<div class="empty">Nenhuma inscrição ainda.</div>';
+ const E=document.getElementById('dashRegEvents');
+ if(E)E.innerHTML=(data.events||[]).map(ev=>{const rs=regs.filter(r=>r.eventId===ev.id);if(!rs.length&&!(ev.form&&ev.form.enabled))return '';const p=rs.filter(r=>r.paymentStatus==='Pago');return `<div class="item"><div><strong>${esc(ev.name)}</strong><small>${p.length} pagas · ${rs.length-p.length} pendentes${ev.form&&ev.form.enabled?' · inscrições abertas':''}</small></div><b class="amount-in">${money(p.reduce((a,r)=>a+Number(r.amount||0),0))}</b></div>`}).join('')||'<div class="empty">Sem inscrições por evento.</div>';
+}
+function renderDashboard(){renderDashRegistrations();let d=daysTo('2026-12-05');document.getElementById('daysStat').textContent=d;document.getElementById('heroDays').textContent=d;let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('balanceStat').textContent=money(inc-out);document.getElementById('eventsStat').textContent=data.events.length;document.getElementById('postsStat').textContent=data.posts.length;
 let ev=[...data.events].filter(x=>x.date&&x.date>=new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);document.getElementById('upcomingList').innerHTML=ev.length?ev.map(x=>`<div class="item"><div><strong>${esc(x.name)}</strong><small>${dateBR(x.date)} · ${esc(x.place||'Local a definir')}</small></div><span class="pill">${esc(x.status||'Planejamento')}</span></div>`).join(''):'<div class="empty">Nenhum compromisso futuro cadastrado.</div>';
 let recent=[...data.transactions].slice(0,4);document.getElementById('financePreview').innerHTML=recent.length?recent.map(x=>`<div class="item"><div><strong>${esc(x.description)}</strong><small>${dateBR(x.date)} · ${esc(x.category)}</small></div><b class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</b></div>`).join(''):'<div class="empty">Seus lançamentos aparecerão aqui.</div>';
 let tasks=[];data.events.forEach(e=>(e.pages||[]).forEach(p=>(p.tasks||[]).forEach((t,i)=>{if(!t.done)tasks.push({event:e.name,page:p.name,task:t.text||t})})));document.getElementById('taskCount').textContent=tasks.length+' tarefas';document.getElementById('taskPreview').innerHTML=tasks.slice(0,4).map(t=>`<div class="item"><div><strong>${esc(t.task)}</strong><small>${esc(t.event)} · ${esc(t.page)}</small></div><span class="pill pink">Pendente</span></div>`).join('')||'<div class="empty">Tudo em dia por aqui.</div>';
@@ -596,6 +629,26 @@ function renderPartners(){
   </article>`;
  }).join('')||'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>';
 }
+function regDate(r){return r.paymentDate||String(r.registrationDate||r.created||r.createdAt||'').slice(0,10)}
+function filteredRegistrations(){
+ const ev=document.getElementById('registrationEventFilter')?.value||'all';
+ const q=(document.getElementById('registrationSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
+ const st=document.getElementById('regStatus')?.value||'all',org=document.getElementById('regOrigin')?.value||'all';
+ const from=document.getElementById('regFrom')?.value||'',to=document.getElementById('regTo')?.value||'';
+ const min=parseFloat(document.getElementById('regMin')?.value),max=parseFloat(document.getElementById('regMax')?.value);
+ const sort=document.getElementById('regSort')?.value||'recent';
+ const list=(data.registrations||[]).filter(r=>{
+  if(ev!=='all'&&r.eventId!==ev)return false;
+  if(st!=='all'&&(r.paymentStatus||'Pendente')!==st)return false;
+  const online=r.source==='Inscrição online';if(org==='online'&&!online)return false;if(org==='manual'&&online)return false;
+  const d=regDate(r);if(from&&(!d||d<from))return false;if(to&&(!d||d>to))return false;
+  const v=Number(r.amount||0);if(Number.isFinite(min)&&v<min)return false;if(Number.isFinite(max)&&v>max)return false;
+  return !q||[r.attendee,r.eventName,r.lot,r.phone,r.email,r.couponCode].some(x=>String(x||'').toLocaleLowerCase('pt-BR').includes(q));
+ });
+ const by={recent:(a,b)=>regDate(b).localeCompare(regDate(a)),old:(a,b)=>regDate(a).localeCompare(regDate(b)),high:(a,b)=>Number(b.amount||0)-Number(a.amount||0),low:(a,b)=>Number(a.amount||0)-Number(b.amount||0),name:(a,b)=>String(a.attendee||'').localeCompare(String(b.attendee||''),'pt-BR')}[sort];
+ return by?list.slice().sort(by):list;
+}
+function clearRegFilters(){['regFrom','regTo','regMin','regMax','registrationSearch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});['regStatus','regOrigin','registrationEventFilter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'});document.getElementById('regSort').value='recent';renderRegistrations()}
 function renderRegistrations(){
  const eventFilter=document.getElementById('registrationEventFilter');
  const previous=eventFilter.value;
@@ -603,16 +656,17 @@ function renderRegistrations(){
  if([...eventFilter.options].some(o=>o.value===previous)) eventFilter.value=previous;
  const query=(document.getElementById('registrationSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
  const all=data.registrations||[];
- const filtered=all.filter(r=>(eventFilter.value==='all'||r.eventId===eventFilter.value)&&[r.attendee,r.eventName,r.lot,r.phone,r.email].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query)));
+ const filtered=filteredRegistrations();
  const paid=all.filter(r=>r.paymentStatus==='Pago').reduce((sum,r)=>sum+Number(r.amount||0),0);
  document.getElementById('registrationCount').textContent=all.length;
  document.getElementById('registrationPaidTotal').textContent=money(paid);
  document.getElementById('registrationPendingCount').textContent=all.filter(r=>r.paymentStatus!=='Pago').length;
  document.getElementById('registrationEventCount').textContent=new Set(all.map(r=>r.eventId)).size;
- document.getElementById('registrationCaption').textContent=`${filtered.length} de ${all.length} inscrições`;
+ const fPaid=filtered.filter(r=>r.paymentStatus==='Pago').reduce((a,r)=>a+Number(r.amount||0),0);
+ document.getElementById('registrationCaption').textContent=`${filtered.length} de ${all.length} inscrições · ${money(fPaid)} pagos no filtro`;
  document.getElementById('registrationsBody').innerHTML=filtered.map(r=>`<tr>
   <td><b>${esc(r.attendee)}</b><div class="muted">${esc(r.phone||r.email||'')}</div>${whoLine(r)}</td>
-  <td>${esc(r.eventName||'—')}</td><td>${esc(r.lot||'—')}</td><td>${r.paymentDate?dateBR(r.paymentDate):'—'}</td>
+  <td>${esc(r.eventName||'—')}</td><td>${esc(r.lot||'—')}${r.couponCode?`<div class="who-line">cupom ${esc(r.couponCode)}${r.originalAmount?' · de '+money(r.originalAmount):''}</div>`:''}</td><td>${r.paymentDate?dateBR(r.paymentDate):(regDate(r)?'<span class="muted">inscrita em '+dateBR(regDate(r))+'</span>':'—')}</td>
   <td><span class="pill ${r.paymentStatus==='Pago'?'':'pink'}">${esc(r.paymentStatus||'Pendente')}</span>${r.source==='Inscrição online'?'<div class="who-line">online · '+esc(r.paymentMethod||'')+'</div>':''}</td>
   <td class="amount-in">${money(r.amount||0)}</td>
   <td><div class="registration-actions"><button class="small-link" onclick="editRegistration('${r.id}')">editar</button><button class="small-link" onclick="removeRegistration('${r.id}')">excluir</button></div></td>
@@ -631,7 +685,7 @@ function removeRegistration(id){
 function exportRegistrationsPDF(){
  const selected=document.getElementById('registrationEventFilter').value;
  const query=(document.getElementById('registrationSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
- const rows=(data.registrations||[]).filter(r=>(selected==='all'||r.eventId===selected)&&[r.attendee,r.eventName,r.lot,r.phone,r.email].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query)));
+ const rows=filteredRegistrations();
  const eventName=selected==='all'?'Todos os eventos':(data.events.find(e=>e.id===selected)?.name||'Evento');
  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const total=rows.filter(r=>r.paymentStatus==='Pago').reduce((a,r)=>a+Number(r.amount||0),0);
@@ -1105,11 +1159,95 @@ function addLotRow(l={}){
  d.innerHTML=`<div><span class="mini">Nome do lote</span><input data-k="name" value="${esc(l.name||'')}" placeholder="Primeiros Momentos"></div><div><span class="mini">Preço (R$)</span><input data-k="price" type="number" min="0" step="0.01" value="${l.price??''}"></div><div><span class="mini">Vagas</span><input data-k="limit" type="number" min="0" step="1" value="${l.limit||''}" placeholder="—"></div><div><span class="mini">Vale até</span><input data-k="until" type="date" value="${esc(l.until||'')}"></div><button type="button" class="rm" title="remover" onclick="this.parentElement.remove()">×</button>`;
  document.getElementById('lotRows').appendChild(d);
 }
+const Q_TYPES=[['section','Seção (título + descrição)'],['name','Nome completo'],['phone','WhatsApp'],['email','E-mail'],['text','Resposta curta'],['textarea','Resposta longa'],['number','Número'],['select','Escolha única'],['multi','Várias escolhas'],['yesno','Sim / Não'],['declaration','Declaração (caixa para marcar)'],['info','Texto informativo (sem resposta)']];
+const Q_IDENTITY=['name','phone','email'];
+function dateExtenso(d){return d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}):'(data do evento)'}
+function defaultIntro(ev){
+ const d=dateExtenso(ev.date),local=ev.id==='soft-reset'?'Espaço Bougainville Itz - Av. São Sebastião':(ev.place||'(local do evento)');
+ return `Uma experiência para desacelerar, experimentar coisas novas e viver momentos que fazem bem.
+A RARA nasceu da vontade de criar experiências que aproximam mulheres de si mesmas, umas das outras e de novas possibilidades.
+
+No dia ${d}, queremos reunir você para um encontro especial, com momentos de bem-estar, movimento, conexão e experiências pensadas para tornar o seu final do ano mais leve e significativo.
+Este formulário é o primeiro passo para participar. Preencha suas informações com atenção e, ao finalizar, confira as orientações para realizar o pagamento e confirmar sua vaga.
+
+Data: ${d}
+Horário: 16h
+Local: ${local}
+Formas de pagamento: Pix ou cartão de crédito
+
+Será um prazer ter você com a gente!
+Com carinho,
+RARA | Wellness Club`;
+}
+function defaultQuestions(ev={}){
+ const yn=uid();
+ return [
+  {id:uid(),type:'section',label:'Informações pessoais',desc:''},
+  {id:uid(),type:'name',label:'Seu nome completo',required:true},
+  {id:uid(),type:'phone',label:'Qual seu número de WhatsApp?',required:true},
+  {id:uid(),type:'email',label:'Qual seu melhor e-mail?',required:true},
+  {id:uid(),type:'number',label:'Idade',required:true},
+  {id:uid(),type:'section',label:'Experiência RARA',desc:`Suas respostas nos ajudam a entender suas expectativas e a tornar o ${ev.name||'nosso encontro'} uma experiência ainda mais especial. 🤎`},
+  {id:uid(),type:'textarea',label:'O que você mais espera viver na nossa primeira experiência?',required:true},
+  {id:uid(),type:'select',label:'Como você conheceu a RARA?',options:'Instagram; Indicação de amiga; WhatsApp; Parceira / marca; Outro',required:true},
+  {id:uid(),type:'section',label:'Alimentação e cuidados',desc:'Queremos que nosso momento de interação seja regado de comidinhas considerando as necessidades de cada participante. 🤎'},
+  {id:yn,type:'yesno',label:'Você possui alguma restrição alimentar, alergia ou intolerância?',required:true},
+  {id:uid(),type:'text',label:'Se você respondeu "sim" na pergunta anterior, qual (quais) seria(m)?',required:true,showIf:{q:yn,value:'Sim'}},
+  {id:uid(),type:'section',label:'Confirmação de inscrição e pagamento',desc:''},
+  {id:uid(),type:'declaration',label:'Declaro que revisei as informações fornecidas neste formulário e confirmo que os dados sobre minhas restrições alimentares, alergias, intolerâncias e preferências estão corretos e completos.',required:true},
+  {id:uid(),type:'declaration',label:'Estou ciente de que o preenchimento deste formulário representa minha solicitação de inscrição e autorizo a equipe da RARA | Wellness Club a entrar em contato comigo para confirmar o recebimento e a identificação do pagamento.',required:true}
+ ];
+}
 function addQuestionRow(q={}){
- const d=document.createElement('div');d.className='row-grid q-row';d.dataset.id=q.id||uid();
+ const d=document.createElement('div');d.className='q-card';d.dataset.id=q.id||uid();
  const t=q.type||'text';
- d.innerHTML=`<div><span class="mini">Pergunta</span><input data-k="label" value="${esc(q.label||'')}" placeholder="Ex.: Tamanho da camiseta"></div><div><span class="mini">Tipo</span><select data-k="type"><option value="text" ${t==='text'?'selected':''}>Resposta curta</option><option value="textarea" ${t==='textarea'?'selected':''}>Resposta longa</option><option value="select" ${t==='select'?'selected':''}>Escolha</option></select></div><div><span class="mini">Opções (se escolha)</span><input data-k="options" value="${esc(q.options||'')}" placeholder="P; M; G"></div><label style="font-size:10px;display:flex;gap:4px;align-items:center;padding-bottom:9px"><input type="checkbox" data-k="required" ${q.required?'checked':''} style="width:auto">obrig.</label><button type="button" class="rm" title="remover" onclick="this.parentElement.remove()">×</button>`;
+ d.dataset.showq=(q.showIf&&q.showIf.q)||'';
+ d.innerHTML=`<span class="mini" data-labelcap>Pergunta / texto</span><textarea data-k="label" rows="1" placeholder="Ex.: Tamanho da camiseta">${esc(q.label||'')}</textarea><div data-descwrap style="margin-top:7px"><span class="mini">Descrição da seção (opcional)</span><textarea data-k="desc" rows="2">${esc(q.desc||'')}</textarea></div>
+ <div class="qline"><div><span class="mini">Tipo</span><select data-k="type">${Q_TYPES.map(([v,l])=>`<option value="${v}" ${t===v?'selected':''}>${l}</option>`).join('')}</select></div><div data-opts><span class="mini">Opções (separe com ;)</span><input data-k="options" value="${esc(q.options||'')}" placeholder="P; M; G"></div><label style="font-size:11px;display:flex;gap:5px;align-items:center;padding-bottom:8px;white-space:nowrap" data-req><input type="checkbox" data-k="required" ${q.required?'checked':''} style="width:auto">obrigatória</label></div>
+ <div class="qline2"><div><span class="mini">Mostrar só se a pergunta…</span><select data-k="showq"><option value="">(sempre mostrar)</option></select></div><div><span class="mini">…tiver a resposta</span><input data-k="showv" value="${esc((q.showIf&&q.showIf.value)||'')}" placeholder="Ex.: Sim"></div><div class="q-tools"><button type="button" title="subir" onclick="moveQ(this,-1)">↑</button><button type="button" title="descer" onclick="moveQ(this,1)">↓</button><button type="button" class="rm" title="remover" onclick="removeQ(this)">×</button></div></div>`;
  document.getElementById('qRows').appendChild(d);
+ d.querySelector('[data-k=type]').addEventListener('change',()=>updateQCard(d));
+ d.querySelector('[data-k=label]').addEventListener('input',refreshShowIf);
+ updateQCard(d);refreshShowIf();
+}
+function updateQCard(d){
+ const t=d.querySelector('[data-k=type]').value,ident=Q_IDENTITY.includes(t);
+ d.querySelector('[data-opts]').style.visibility=['select','multi'].includes(t)?'visible':'hidden';
+ d.querySelector('[data-req]').style.visibility=['info','section'].includes(t)||ident?'hidden':'visible';
+ d.querySelector('[data-descwrap]').style.display=t==='section'?'block':'none';
+ d.querySelector('[data-labelcap]').textContent=t==='section'?'Título da seção':t==='info'?'Texto':'Pergunta';
+ d.querySelector('.qline2').style.display=ident?'none':'grid';
+ d.style.background=t==='section'?'#eef4f6':ident?'#fbf7f2':'#fffdfa';
+}
+function removeQ(btn){const c=btn.closest('.q-card');const t=c.querySelector('[data-k=type]').value;if(Q_IDENTITY.includes(t)){alert('Esta pergunta não pode ser removida — o pagamento precisa dela. Você pode mudar o texto ou a posição.');return}c.remove();refreshShowIf()}
+function moveQ(btn,dir){const c=btn.closest('.q-card');const sib=dir<0?c.previousElementSibling:c.nextElementSibling;if(!sib)return;dir<0?c.parentNode.insertBefore(c,sib):c.parentNode.insertBefore(sib,c);refreshShowIf()}
+function refreshShowIf(){
+ const cards=[...document.querySelectorAll('#qRows .q-card')];
+ cards.forEach((c,idx)=>{
+  const sel=c.querySelector('[data-k=showq]');const cur=sel.value||c.dataset.showq||'';
+  const prev=cards.slice(0,idx).filter(p=>['select','multi','yesno','declaration'].includes(p.querySelector('[data-k=type]').value)||p.dataset.id===cur);
+  sel.innerHTML='<option value="">(sempre mostrar)</option>'+prev.map(p=>{const l=p.querySelector('[data-k=label]').value.trim()||'(sem título)';return `<option value="${esc(p.dataset.id)}" ${p.dataset.id===cur?'selected':''}>${esc(l.length>45?l.slice(0,45)+'…':l)}</option>`}).join('');
+  if(cur&&!prev.some(p=>p.dataset.id===cur)){sel.value='';c.dataset.showq=''}
+  sel.onchange=()=>{c.dataset.showq=sel.value};
+ });
+}
+function addCouponRow(c={}){
+ const d=document.createElement('div');d.className='row-grid lot-row coupon-row';
+ d.innerHTML=`<div><span class="mini">Código</span><input data-k="code" value="${esc(c.code||'')}" placeholder="RARA10" style="text-transform:uppercase"></div><div><span class="mini">Desconto</span><div style="display:flex;gap:4px"><input data-k="value" type="number" min="0" step="0.01" value="${c.value??''}"><select data-k="kind" style="width:58px"><option value="percent" ${c.kind!=='fixed'?'selected':''}>%</option><option value="fixed" ${c.kind==='fixed'?'selected':''}>R$</option></select></div></div><div><span class="mini">Limite de usos</span><input data-k="limit" type="number" min="0" step="1" value="${c.limit||''}" placeholder="—"></div><div><span class="mini">Vale até</span><input data-k="until" type="date" value="${esc(c.until||'')}"></div><button type="button" class="rm" title="remover" onclick="this.parentElement.remove()">×</button>`;
+ document.getElementById('couponRows').appendChild(d);
+}
+function readCouponRows(){
+ return [...document.querySelectorAll('#couponRows .coupon-row')].map(r=>({code:r.querySelector('[data-k=code]').value.trim().toUpperCase(),value:Number(String(r.querySelector('[data-k=value]').value).replace(',','.'))||0,kind:r.querySelector('[data-k=kind]').value,limit:Number(r.querySelector('[data-k=limit]').value)||0,until:r.querySelector('[data-k=until]').value})).filter(c=>c.code||c.value);
+}
+function readQuestionRows(){
+ return [...document.querySelectorAll('#qRows .q-card')].map(r=>{
+  const type=r.querySelector('[data-k=type]').value,showq=r.querySelector('[data-k=showq]').value,showv=r.querySelector('[data-k=showv]').value.trim();
+  const q={id:r.dataset.id,label:r.querySelector('[data-k=label]').value.trim(),type,options:['select','multi'].includes(type)?r.querySelector('[data-k=options]').value.trim():'',required:Q_IDENTITY.includes(type)||(!['info','section'].includes(type)&&r.querySelector('[data-k=required]').checked)};
+  if(type==='section')q.desc=r.querySelector('[data-k=desc]').value.trim();
+  if(Q_IDENTITY.includes(type))return q;
+  if(showq&&showv)q.showIf={q:showq,value:showv};
+  return q;
+ }).filter(q=>q.label);
 }
 
 // ================= Quem está usando (Denise / Maria Eduarda) =================

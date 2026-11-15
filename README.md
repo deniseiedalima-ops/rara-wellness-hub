@@ -121,7 +121,7 @@ O banco **RARA · Dados**, com todas as colunas e visualizações, já está pro
 Cada evento pode ter uma página pública, por exemplo `https://rara-wellness-hub.vercel.app/inscricao/the-soft-reset`. A cliente vê só essa página: as informações do evento, o formulário e o pagamento por Pix ou cartão de crédito no Mercado Pago. O painel interno não aparece para ela.
 
 **Como funciona**
-1. A cliente preenche o formulário: nome, WhatsApp, e-mail, faixa etária, restrição alimentar, como conheceu a RARA e as perguntas extras do evento.
+1. A cliente preenche o formulário do evento. Nome, WhatsApp e e-mail são sempre pedidos; o resto vocês montam (veja "Montar o formulário").
 2. Ela é levada ao Mercado Pago com o preço do lote atual. O preço é sempre calculado pelo servidor, então não dá para alterar.
 3. A inscrição aparece na hora em **Inscrições** como *Pendente* e marcada como "online".
 4. Quando o pagamento é aprovado, o Mercado Pago avisa o site sozinho:
@@ -139,10 +139,57 @@ Cada evento pode ter uma página pública, por exemplo `https://rara-wellness-hu
 1. No painel, vá em **Eventos**, escolha o evento e clique em **Criar página** (ou **Configurar**).
 2. Marque **Inscrições abertas** e confira o endereço.
 3. Escreva o texto de apresentação.
-4. Cadastre os lotes (nome, preço, vagas, data final) e as perguntas extras.
+4. Cadastre os lotes (nome, preço, vagas, data final) e monte o formulário.
 5. Opcional: escreva uma mensagem de confirmação e coloque o link do grupo de WhatsApp.
 6. Clique em **Salvar**. Use **Copiar link** para colocar na bio do Instagram ou mandar no WhatsApp.
 - O painel precisa estar conectado em **Conta & sincronização** para a página receber as configurações.
+
+
+**Mensagem inicial**
+
+É o texto que aparece no topo da página, antes das perguntas. Cada evento já começa com o texto da RARA ("Uma experiência para desacelerar…"), com data, horário, local e formas de pagamento. Edite à vontade para cada evento.
+
+**Montar o formulário**
+
+Cada evento já começa com o modelo da RARA, dividido em quatro seções:
+1. **Informações pessoais:** nome completo, WhatsApp, e-mail e idade.
+2. **Experiência RARA:** o que espera viver e como conheceu a RARA.
+3. **Alimentação e cuidados:** restrição alimentar (Sim/Não) e, se a resposta for Sim, "qual (quais) seria(m)?".
+4. **Confirmação de inscrição e pagamento:** as duas declarações para marcar e, logo depois, o botão de pagamento.
+
+O que dá para fazer:
+- Editar, apagar, reordenar (↑ ↓) e criar perguntas e seções.
+- As perguntas de **nome, WhatsApp e e-mail** podem ter o texto e a posição alterados, mas não podem ser apagadas, porque o pagamento precisa delas.
+
+Tipos disponíveis:
+- **Seção:** título e descrição; cada seção vira um bloco na página.
+- **Resposta curta**, **Resposta longa** ou **Número**
+- **Escolha única** ou **Várias escolhas:** separe as opções com `;`.
+- **Sim / Não**
+- **Declaração:** uma caixinha para marcar.
+- **Texto informativo:** um bloco de texto sem resposta.
+
+Para uma pergunta só aparecer quando outra tiver certa resposta, use **"Mostrar só se a pergunta… tiver a resposta…"**.
+
+**Cupons de desconto**
+
+Em cada evento, na janela **Configurar**, cadastre:
+- o código (ex.: `RARA10`);
+- o desconto em % ou em R$;
+- se quiser, um limite de usos e uma data de validade.
+
+Na página, a cliente digita o cupom e clica em **Aplicar**. O valor muda na hora, e o Mercado Pago já cobra com o desconto. Os códigos nunca aparecem para quem não os tem.
+
+Um cupom de **100%** confirma a vaga como **cortesia**, sem passar pelo pagamento.
+
+Na aba Inscrições aparecem o cupom usado e o valor original.
+
+**Aba Inscrições e Dashboard**
+- Todas as inscrições ficam na aba **Inscrições**, tanto as online quanto as manuais.
+- Os filtros disponíveis são: evento, status (Pago, Pendente ou Reembolsado), origem (online ou manual), período (de/até), valor (de/até) e busca por participante.
+- A lista pode ser ordenada por data, por valor ou por nome.
+- O PDF baixado respeita os filtros escolhidos.
+- O **Dashboard** mostra um resumo: inscritas, pagas, pendentes, valor recebido, as últimas inscrições e o total por evento.
 
 ### Passo extra — credencial do Mercado Pago (uma vez só)
 1. Entre na conta Mercado Pago da RARA e acesse https://www.mercadopago.com.br/developers/panel/app
@@ -162,4 +209,4 @@ Cada evento pode ter uma página pública, por exemplo `https://rara-wellness-hu
 - Confira se ela vira **Pago** e entra no Financeiro.
 - Depois, exclua o teste no painel.
 
-**Arquivos novos desta parte:** `inscricao.html` e, dentro de `api/`, os arquivos `_public.js`, `public-event.js`, `public-register.js`, `public-status.js` e `mp-webhook.js`. O `vercel.json` também mudou.
+**Arquivos novos desta parte:** `inscricao.html` e, dentro de `api/`, os arquivos `_public.js`, `public-event.js`, `public-register.js`, `public-coupon.js`, `public-status.js` e `mp-webhook.js`. O `vercel.json` também mudou.
