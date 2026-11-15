@@ -12,6 +12,11 @@
   - Excluir algo no site **não apaga a linha no Notion**: ela só fica marcada na coluna **Excluído**, com todos os dados preservados.
   - Se o mesmo registro foi editado em dois aparelhos, vale a versão do Notion, e a versão do navegador fica guardada como backup.
   - Novos botões: **Baixar backup completo** e **Restaurar / juntar backup**. Restaurar só acrescenta o que estiver faltando e nunca apaga nem sobrescreve.
+- **Quem lançou cada dado**:
+  - Na primeira vez que o site é aberto em cada aparelho, ele pergunta "Quem está usando?" (Denise ou Maria Eduarda) e guarda a resposta naquele aparelho.
+  - Dá para trocar clicando no nome no topo do site.
+  - Cada registro novo mostra "Lançado por" e, quando editado, "editado por", com data e hora. Isso aparece no site e nas colunas **Lançado por / Editado por** do Notion.
+  - O que já existia antes desta função aparece como "Lançado antes do controle de autoria".
 - O código antigo do Supabase foi removido. Ele substituía os dados do navegador ao conectar.
 
 ## Arquivos do projeto (todos na raiz do projeto da Vercel)

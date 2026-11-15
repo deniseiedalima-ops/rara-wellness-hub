@@ -17,6 +17,7 @@
 .partner-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}
 .partner-edit-btn{padding:8px 15px!important;font-size:13px!important;min-height:36px}
 
+.userchip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fffdfa;border-radius:30px;padding:3px 12px 3px 3px;color:var(--ink);font-size:12px}.userchip:hover{background:var(--blue2)}.who-line{font-size:10px;color:#a3a9a6;margin-top:4px}.who-btn{min-width:150px;padding:14px 18px;font-size:14px}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -42,7 +43,7 @@
  <div class="side-bottom"><div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Modo local · neste navegador</span></div><button class="small-link" onclick="openSettings()">Conta & sincronização</button><br><button class="small-link" onclick="downloadBackup()">Baixar backup completo</button><br>RARA · made with care 🤎</div>
 </aside>
 <main class="main">
-<header class="top"><div><div class="eyebrow">RARA / MANAGEMENT HUB</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div><div class="topright"><span class="userlabel muted" id="todayLabel"></span><div class="avatar">R</div></div></header>
+<header class="top"><div><div class="eyebrow">RARA / MANAGEMENT HUB</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div><div class="topright"><span class="userlabel muted" id="todayLabel"></span><button type="button" class="userchip" onclick="openWho()" title="Trocar quem está usando"><span class="avatar" id="userAvatar">?</span><span id="userName">Quem está usando?</span></button></div></header>
 
 <section class="page active" id="dashboard">
  <div class="grid stats">
@@ -192,6 +193,7 @@
 </main></div>
 
 <div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h3 id="modalTitle">Novo registro</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div><div class="actions"><button class="btn outline" onclick="closeModal()">Cancelar</button><button class="btn" id="saveModal" type="button">Salvar</button></div></div></div>
+<div class="modal" id="whoModal"><div class="modalbox" style="max-width:440px;text-align:center"><div class="eyebrow">RARA / MANAGEMENT HUB</div><h3 style="font:500 26px Fraunces,serif;margin:8px 0 6px">Quem está usando?</h3><p class="muted" style="font-size:12px;line-height:1.6;margin:0 0 18px">Cada lançamento, inscrição ou compra vai registrar quem fez. A escolha fica salva neste aparelho — dá para trocar clicando no seu nome no topo.</p><div class="actions" style="justify-content:center;flex-wrap:wrap;margin-top:0"><button class="btn who-btn" onclick="setUser('Denise')">Denise</button><button class="btn pink who-btn" onclick="setUser('Maria Eduarda')">Maria Eduarda</button></div></div></div>
 <div class="modal" id="settingsModal"><div class="modalbox"><div class="modalhead"><h3>Conta & sincronização</h3><button class="close" onclick="closeSettings()">×</button></div>
 <div class="notice">Seus dados continuam salvos neste navegador. Ao entrar com a conta Google autorizada, eles também são copiados para o banco de dados no Notion e ficam disponíveis em qualquer aparelho com o mesmo login. Nada é apagado: exclusões feitas no site ficam marcadas como “Excluído” no Notion.</div>
 <div id="accountStatus" class="muted" style="font-size:12px;line-height:1.6;margin-bottom:12px">Verificando…</div>
@@ -235,7 +237,9 @@ function isRemoved(collection,id){return removedSet().has(collection+':'+id)}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(initial)}catch{return structuredClone(initial)}}
 function persist(){
  try{
+  if(typeof stampChanges==='function') stampChanges();
   localStorage.setItem(KEY,JSON.stringify(data));
+  if(typeof takeStampSnapshot==='function') takeStampSnapshot();
  }catch(err){
   console.error('Falha ao salvar dados localmente:',err);
   alert('Não foi possível salvar neste navegador. Verifique as permissões e o espaço de armazenamento.');
@@ -426,7 +430,7 @@ function saveModal(){
    let board=data.checklists.find(b=>b.id===val('board'))||data.checklists.find(b=>b.id===selectedChecklistBoard);
    if(!board){alert('Crie ou selecione uma subaba antes de adicionar um post-it.');return}
    if(!Array.isArray(board.tasks)) board.tasks=[];
-   board.tasks.unshift({id,title,description:val('description').trim(),priority:val('priority')||'Média',due:val('due'),done:false,created:new Date().toISOString()});
+   board.tasks.unshift({id,title,description:val('description').trim(),priority:val('priority')||'Média',due:val('due'),done:false,created:new Date().toISOString(),createdBy:currentUser()||'Não identificado'});
    selectedChecklistBoard=board.id;
   }
   // Close first so a rendering problem cannot make the Save button appear unresponsive.
@@ -448,9 +452,9 @@ let tasks=[];data.events.forEach(e=>(e.pages||[]).forEach(p=>(p.tasks||[]).forEa
  document.getElementById('dashboardChecklist').innerHTML=todo.slice(0,7).map(t=>`<label class="dashboard-task"><input type="checkbox" onchange="toggleChecklistTask('${t.boardId}','${t.id}',this.checked)"><span><strong>${esc(t.title)}</strong><small>${esc(t.boardName)} · ${esc(t.priority)}${t.due?' · prazo '+dateBR(t.due):''}</small></span></label>`).join('')||'<div class="empty">Nenhuma tarefa pendente. Adicione post-its na aba Checklist.</div>';
 }
 function renderFinance(){let ts=data.transactions,filter=document.getElementById('financeFilter').value;if(filter!=='all')ts=ts.filter(x=>x.type===filter);let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('incomeTotal').textContent=money(inc);document.getElementById('expenseTotal').textContent=money(out);document.getElementById('netTotal').textContent=money(inc-out);document.getElementById('transactionCount').textContent=data.transactions.length;document.getElementById('financeCaption').textContent=ts.length+' registros';
-document.getElementById('transactionsBody').innerHTML=ts.map(x=>`<tr><td>${dateBR(x.date)}</td><td><b>${esc(x.description)}</b><div class="muted">${esc(x.notes||'')}</div></td><td>${esc(x.category)}</td><td>${esc(x.event||'—')}</td><td><span class="pill ${x.status==='Pendente'?'pink':''}">${esc(x.status)}</span></td><td class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</td><td><button class="small-link" onclick="removeItem('transactions','${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum lançamento registrado.</td></tr>';
+document.getElementById('transactionsBody').innerHTML=ts.map(x=>`<tr><td>${dateBR(x.date)}</td><td><b>${esc(x.description)}</b><div class="muted">${esc(x.notes||'')}</div>${whoLine(x)}</td><td>${esc(x.category)}</td><td>${esc(x.event||'—')}</td><td><span class="pill ${x.status==='Pendente'?'pink':''}">${esc(x.status)}</span></td><td class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</td><td><button class="small-link" onclick="removeItem('transactions','${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum lançamento registrado.</td></tr>';
 let months={};data.transactions.forEach(x=>{let m=(x.date||'').slice(0,7);if(!m)return;months[m]??={in:0,out:0};months[m][x.type==='income'?'in':'out']+=x.amount});document.getElementById('cashflow').innerHTML=Object.keys(months).sort().reverse().map(m=>`<div class="item"><div><strong>${new Date(m+'-02').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</strong><small>Entradas ${money(months[m].in)} · Saídas ${money(months[m].out)}</small></div><b>${money(months[m].in-months[m].out)}</b></div>`).join('')||'<div class="empty">O fluxo de caixa será construído conforme os lançamentos.</div>'}
-function renderIdeas(){let f=document.getElementById('ideaFilter').value,arr=data.ideas.filter(x=>f==='all'||x.category===f);document.getElementById('ideasGrid').innerHTML=arr.map(x=>`<div class="card idea"><div class="tag">${esc(x.category)}</div><h3 style="font:500 20px Fraunces;margin:10px 0 4px">${esc(x.title)}</h3><p>${esc(x.description||'Sem descrição.')}</p>${x.next?`<small class="muted">Próximo passo: ${esc(x.next)}</small>`:''}<div style="margin-top:14px"><button class="small-link" onclick="removeItem('ideas','${x.id}')">remover</button></div></div>`).join('')||'<div class="empty">Ainda não há ideias nessa categoria.</div>'}
+function renderIdeas(){let f=document.getElementById('ideaFilter').value,arr=data.ideas.filter(x=>f==='all'||x.category===f);document.getElementById('ideasGrid').innerHTML=arr.map(x=>`<div class="card idea"><div class="tag">${esc(x.category)}</div><h3 style="font:500 20px Fraunces;margin:10px 0 4px">${esc(x.title)}</h3><p>${esc(x.description||'Sem descrição.')}</p>${x.next?`<small class="muted">Próximo passo: ${esc(x.next)}</small>`:''}${whoLine(x)}<div style="margin-top:14px"><button class="small-link" onclick="removeItem('ideas','${x.id}')">remover</button></div></div>`).join('')||'<div class="empty">Ainda não há ideias nessa categoria.</div>'}
 function renderEventDetail(){
  const root=document.getElementById('eventDetail');
  const event=data.events.find(x=>x.id===selectedEvent);
@@ -516,7 +520,7 @@ function addChecklistBoard(){
  selectedChecklistBoard=board.id;
  persist();
 }
-function renderChecklist(){if(!Array.isArray(data.checklists)||!data.checklists.length)data.checklists=[{id:'general-board',name:'Post-its',tasks:[]}];data.checklists.forEach((board,index)=>{if(!board.id)board.id=uid();if(!board.name)board.name=`Subaba ${index+1}`;if(!Array.isArray(board.tasks))board.tasks=[]});if(!data.checklists.some(b=>b.id===selectedChecklistBoard))selectedChecklistBoard=data.checklists[0].id;let b=data.checklists.find(x=>x.id===selectedChecklistBoard);document.getElementById('checklistBoards').innerHTML=data.checklists.map(x=>`<button class="board-btn ${x.id===selectedChecklistBoard?'active':''}" onclick="selectChecklistBoard('${x.id}')"><span>▤ ${esc(x.name)}</span><small>${(x.tasks||[]).filter(t=>!t.done).length}</small></button>`).join('');let tasks=b.tasks||[],rank={'Urgente':0,'Média':1,'Baixa':2};tasks.sort((a,c)=>(rank[a.priority]??3)-(rank[c.priority]??3)||(a.due||'9999').localeCompare(c.due||'9999'));document.getElementById('checklistContent').innerHTML=`<div class="section-head"><div><div class="eyebrow">CHECKLIST / ${esc(b.name)}</div><h3 style="font:500 25px Fraunces;margin:5px 0">${esc(b.name)}</h3><span class="muted">${tasks.filter(t=>!t.done).length} pendentes · ${tasks.filter(t=>t.done).length} concluídas</span></div><div><button class="small-link" onclick="renameChecklistBoard('${b.id}')">renomear</button> <button class="small-link" onclick="deleteChecklistBoard('${b.id}')">excluir subaba</button></div></div><div class="sticky-grid">${tasks.map(t=>`<article class="sticky-note priority-${t.priority==='Urgente'?'urgent':t.priority==='Média'?'medium':'low'} ${t.done?'completed':''}"><div class="sticky-meta"><span class="priority-chip">${esc(t.priority)}</span>${t.due?`<span class="muted" style="font-size:10px">Prazo: ${dateBR(t.due)}</span>`:''}</div><h4>${esc(t.title)}</h4>${t.description?`<p>${esc(t.description)}</p>`:''}<div class="sticky-footer"><label style="font-size:11px;color:#718084;display:flex;gap:6px;align-items:center"><input type="checkbox" ${t.done?'checked':''} onchange="toggleChecklistTask('${b.id}','${t.id}',this.checked)"> ${t.done?'Concluído':'Marcar como feito'}</label><button class="check-action" onclick="deleteChecklistTask('${b.id}','${t.id}')">excluir ×</button></div></article>`).join('')||'<div class="empty" style="grid-column:1/-1">Esta subaba está vazia. Crie um post-it para começar.</div>'}</div>`}
+function renderChecklist(){if(!Array.isArray(data.checklists)||!data.checklists.length)data.checklists=[{id:'general-board',name:'Post-its',tasks:[]}];data.checklists.forEach((board,index)=>{if(!board.id)board.id=uid();if(!board.name)board.name=`Subaba ${index+1}`;if(!Array.isArray(board.tasks))board.tasks=[]});if(!data.checklists.some(b=>b.id===selectedChecklistBoard))selectedChecklistBoard=data.checklists[0].id;let b=data.checklists.find(x=>x.id===selectedChecklistBoard);document.getElementById('checklistBoards').innerHTML=data.checklists.map(x=>`<button class="board-btn ${x.id===selectedChecklistBoard?'active':''}" onclick="selectChecklistBoard('${x.id}')"><span>▤ ${esc(x.name)}</span><small>${(x.tasks||[]).filter(t=>!t.done).length}</small></button>`).join('');let tasks=b.tasks||[],rank={'Urgente':0,'Média':1,'Baixa':2};tasks.sort((a,c)=>(rank[a.priority]??3)-(rank[c.priority]??3)||(a.due||'9999').localeCompare(c.due||'9999'));document.getElementById('checklistContent').innerHTML=`<div class="section-head"><div><div class="eyebrow">CHECKLIST / ${esc(b.name)}</div><h3 style="font:500 25px Fraunces;margin:5px 0">${esc(b.name)}</h3><span class="muted">${tasks.filter(t=>!t.done).length} pendentes · ${tasks.filter(t=>t.done).length} concluídas</span></div><div><button class="small-link" onclick="renameChecklistBoard('${b.id}')">renomear</button> <button class="small-link" onclick="deleteChecklistBoard('${b.id}')">excluir subaba</button></div></div><div class="sticky-grid">${tasks.map(t=>`<article class="sticky-note priority-${t.priority==='Urgente'?'urgent':t.priority==='Média'?'medium':'low'} ${t.done?'completed':''}"><div class="sticky-meta"><span class="priority-chip">${esc(t.priority)}</span>${t.due?`<span class="muted" style="font-size:10px">Prazo: ${dateBR(t.due)}</span>`:''}</div><h4>${esc(t.title)}</h4>${t.description?`<p>${esc(t.description)}</p>`:''}${t.createdBy?`<div class="who-line" style="margin:-6px 0 8px">por ${esc(t.createdBy)}</div>`:''}<div class="sticky-footer"><label style="font-size:11px;color:#718084;display:flex;gap:6px;align-items:center"><input type="checkbox" ${t.done?'checked':''} onchange="toggleChecklistTask('${b.id}','${t.id}',this.checked)"> ${t.done?'Concluído':'Marcar como feito'}</label><button class="check-action" onclick="deleteChecklistTask('${b.id}','${t.id}')">excluir ×</button></div></article>`).join('')||'<div class="empty" style="grid-column:1/-1">Esta subaba está vazia. Crie um post-it para começar.</div>'}</div>`}
 function selectChecklistBoard(id){selectedChecklistBoard=id;renderChecklist()}
 function toggleChecklistTask(bid,tid,done){let b=data.checklists.find(x=>x.id===bid),t=b?.tasks?.find(x=>x.id===tid);if(!t)return;t.done=done;persist()}
 function deleteChecklistTask(bid,tid){if(!confirm('Excluir este post-it?'))return;let b=data.checklists.find(x=>x.id===bid);if(!b)return;b.tasks=(b.tasks||[]).filter(x=>x.id!==tid);persist()}
@@ -546,6 +550,7 @@ function renderPartners(){
    ${x.contact?`<div class="muted" style="margin-top:8px">Contato: ${esc(x.contact)}</div>`:''}
    ${x.social?`<div class="muted" style="margin-top:5px;overflow-wrap:anywhere">${esc(x.social)}</div>`:''}
    ${x.notes?`<p class="muted" style="margin-top:10px">${esc(x.notes)}</p>`:''}
+   ${whoLine(x)}
    <div class="partner-actions"><button type="button" class="btn partner-edit-btn" onclick="editPartner('${x.id}')">✎ Editar</button><button type="button" class="small-link" onclick="removeItem('partners','${x.id}')">remover registro</button></div>
   </article>`;
  }).join('')||'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>';
@@ -565,7 +570,7 @@ function renderRegistrations(){
  document.getElementById('registrationEventCount').textContent=new Set(all.map(r=>r.eventId)).size;
  document.getElementById('registrationCaption').textContent=`${filtered.length} de ${all.length} inscrições`;
  document.getElementById('registrationsBody').innerHTML=filtered.map(r=>`<tr>
-  <td><b>${esc(r.attendee)}</b><div class="muted">${esc(r.phone||r.email||'')}</div></td>
+  <td><b>${esc(r.attendee)}</b><div class="muted">${esc(r.phone||r.email||'')}</div>${whoLine(r)}</td>
   <td>${esc(r.eventName||'—')}</td><td>${esc(r.lot||'—')}</td><td>${r.paymentDate?dateBR(r.paymentDate):'—'}</td>
   <td><span class="pill ${r.paymentStatus==='Pago'?'':'pink'}">${esc(r.paymentStatus||'Pendente')}</span></td>
   <td class="amount-in">${money(r.amount||0)}</td>
@@ -614,7 +619,7 @@ function renderPurchases(){
  const owes=denise>maria?'Maria Eduarda':maria>denise?'Denise':'Nenhuma das duas';
  document.getElementById('purchaseSettlement').innerHTML=diff?`<strong>${owes}</strong> precisa repassar <strong>${money(diff/2)}</strong> para a outra, considerando uma divisão igualitária de 50% do investimento total.`:'Até agora, os investimentos pagos estão equilibrados.';
  document.getElementById('purchaseCaption').textContent=`${filtered.length} de ${all.length} compras`;
- document.getElementById('purchasesBody').innerHTML=filtered.map(x=>`<tr><td><b>${esc(x.item)}</b><div class="muted">${esc(x.category||'')}${x.vendor?' · '+esc(x.vendor):''}</div></td><td>${esc(x.buyer)}</td><td>${x.purchaseDate?dateBR(x.purchaseDate):'—'}</td><td>${esc(x.eventName||'—')}</td><td><span class="pill ${x.paymentStatus==='Pago'?'':'pink'}">${esc(x.paymentStatus)}</span></td><td>${money(x.amount||0)}</td><td><button class="small-link" onclick="editPurchase('${x.id}')">editar</button> <button class="small-link" onclick="deletePurchase('${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhuma compra cadastrada.</td></tr>';
+ document.getElementById('purchasesBody').innerHTML=filtered.map(x=>`<tr><td><b>${esc(x.item)}</b><div class="muted">${esc(x.category||'')}${x.vendor?' · '+esc(x.vendor):''}</div>${whoLine(x)}</td><td>${esc(x.buyer)}</td><td>${x.purchaseDate?dateBR(x.purchaseDate):'—'}</td><td>${esc(x.eventName||'—')}</td><td><span class="pill ${x.paymentStatus==='Pago'?'':'pink'}">${esc(x.paymentStatus)}</span></td><td>${money(x.amount||0)}</td><td><button class="small-link" onclick="editPurchase('${x.id}')">editar</button> <button class="small-link" onclick="deletePurchase('${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhuma compra cadastrada.</td></tr>';
 }
 function editPurchase(id){openModal('purchase-edit',{id})}
 function deletePurchase(id){
@@ -747,6 +752,12 @@ function recordHash(obj){return hashStr(stableStringify(obj))}
 function loadSyncState(){try{const s=JSON.parse(localStorage.getItem(SYNC_STATE_KEY)||'null');if(s&&typeof s==='object'&&s.synced&&typeof s.synced==='object')return s}catch{}return {account:null,synced:{}}}
 function saveSyncState(s){try{localStorage.setItem(SYNC_STATE_KEY,JSON.stringify(s))}catch(e){console.warn(e)}}
 function syncSummary(c,x){
+ const base=syncSummaryBase(c,x);
+ base.by=x.createdBy?`${x.createdBy} · ${fmtWhen(x.createdAt)}`:'';
+ base.editedBy=x.updatedBy?`${x.updatedBy} · ${fmtWhen(x.updatedAt)}`:'';
+ return base;
+}
+function syncSummaryBase(c,x){
  const t=v=>v==null?'':String(v);
  switch(c){
   case 'transactions':return {title:x.description,date:x.date,amount:x.amount,status:x.status,event:x.event,category:x.category,detail:x.type==='income'?'Receita':x.type==='expense'?'Despesa':t(x.type)};
@@ -871,6 +882,7 @@ async function pullRemote(){
  state.account=SYNC.account;
  const {records}=await api('data');
  const changed=mergeRemote(records,state);
+ takeStampSnapshot();
  saveSyncState(state);
  if(changed){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){console.error(e)}try{renderAll()}catch(e){console.error(e)}}
 }
@@ -1005,6 +1017,7 @@ function restoreBackup(input){
    const src=parsed&&parsed.data&&typeof parsed.data==='object'?parsed.data:parsed;
    if(!src||typeof src!=='object')throw new Error('Arquivo sem dados do RARA.');
    saveBackupCopy('antes de restaurar backup');
+   for(const c of SYNC_COLLECTIONS)(src[c]||[]).forEach(x=>{if(x&&typeof x==='object'&&!x.createdBy){x.createdBy='Restaurado de backup';x.createdAt=new Date().toISOString()}});
    const added=mergeBackupData(src);
    if(!added){alert('Nenhum registro novo: tudo o que está no backup já existe aqui.');return}
    persist();
@@ -1033,5 +1046,43 @@ const softResetImportResult=HAD_LOCAL_DATA?importSoftResetRegistrationsBatch():{
 const historicalPurchaseImportCount=HAD_LOCAL_DATA?importHistoricalRaraPurchases():0;
 renderAll();
 const initialRoute=location.hash.slice(1);if(initialRoute)go(initialRoute,false);
+
+// ================= Quem está usando (Denise / Maria Eduarda) =================
+const USER_KEY='rara_user_name';
+let STAMP_SNAPSHOT=null;
+function currentUser(){try{return localStorage.getItem(USER_KEY)||''}catch{return ''}}
+function fmtWhen(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return '';return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
+function whoLine(x){
+ if(!x)return '';
+ let t=x.createdBy?`Lançado por <b>${esc(x.createdBy)}</b>${x.createdAt?' em '+fmtWhen(x.createdAt):''}`:'Lançado antes do controle de autoria';
+ if(x.updatedBy)t+=` · editado por <b>${esc(x.updatedBy)}</b>${x.updatedAt?' em '+fmtWhen(x.updatedAt):''}`;
+ return `<div class="who-line">${t}</div>`;
+}
+function takeStampSnapshot(){STAMP_SNAPSHOT=new Map([...flattenData(data)].map(([k,v])=>[k,v.hash]))}
+// Marca automaticamente quem criou ou alterou cada registro desde o último salvamento.
+function stampChanges(){
+ if(!STAMP_SNAPSHOT)return;
+ const who=currentUser()||'Não identificado',now=new Date().toISOString();
+ for(const [key,l] of flattenData(data)){
+  const prev=STAMP_SNAPSHOT.get(key);
+  if(prev===undefined){if(!l.obj.createdBy){l.obj.createdBy=who;l.obj.createdAt=now}}
+  else if(prev!==l.hash){l.obj.updatedBy=who;l.obj.updatedAt=now}
+ }
+}
+function renderUserChip(){
+ const u=currentUser();
+ const a=document.getElementById('userAvatar'),n=document.getElementById('userName');
+ if(a)a.textContent=u?u[0].toUpperCase():'?';
+ if(n)n.textContent=u||'Quem está usando?';
+}
+function openWho(){document.getElementById('whoModal').classList.add('open')}
+function setUser(name){
+ try{localStorage.setItem(USER_KEY,name)}catch{}
+ document.getElementById('whoModal').classList.remove('open');
+ renderUserChip();
+}
+takeStampSnapshot();
+renderUserChip();
+if(!currentUser())openWho();
 initAccount();
 </script></body></html>

@@ -178,6 +178,8 @@ const REQUIRED_PROPS = {
   'Evento': { rich_text: {} },
   'Categoria': { rich_text: {} },
   'Detalhe': { rich_text: {} },
+  'Lançado por': { rich_text: {} },
+  'Editado por': { rich_text: {} },
   'Ordem': { number: {} },
   'Hash': { rich_text: {} },
   'Excluído': { checkbox: {} },
@@ -268,6 +270,8 @@ function buildProps(op, account, titleName) {
     'Evento': { rich_text: text(s.event) },
     'Categoria': { rich_text: text(s.category) },
     'Detalhe': { rich_text: text(s.detail) },
+    'Lançado por': { rich_text: text(s.by) },
+    'Editado por': { rich_text: text(s.editedBy) },
     'Hash': { rich_text: text(op.hash) },
     'Excluído': { checkbox: false },
     'Dados': { rich_text: chunks(op.json) }
