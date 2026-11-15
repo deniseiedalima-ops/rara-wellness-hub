@@ -1,16 +1,109 @@
-# RARA Management Hub
+# RARA Management Hub — login Google + banco de dados no Notion
 
-## Configuração do login e banco compartilhado
+## O que mudou nesta versão
 
-1. No Supabase, abra **SQL Editor → New query**.
-2. Cole e execute o conteúdo de `supabase-shared-workspace.sql`.
-3. No site RARA, informe a **Project URL** e a chave pública **publishable/anon**. Não use `service_role` ou secret key.
-4. Entre com Google usando `rarawellnessclub@gmail.com`.
-5. O primeiro login que encontrar a tabela vazia migrará os dados locais desse navegador para `rara_workspace`. Os logins seguintes carregarão o conteúdo compartilhado.
-6. Alterações gravadas serão enviadas ao Supabase e atualizações remotas serão exibidas em tempo real.
+- **Login com Google**: só os e-mails autorizados entram (ex.: `rarawellnessclub@gmail.com`).
+- **Banco de dados no Notion**: cada lançamento, inscrição, compra, ideia, evento, post, link, checklist e parceiro vira uma linha numa tabela do Notion.
+- **Dados por login**: cada conta vê e grava somente os próprios dados. Quem entra com o mesmo login, em qualquer aparelho, vê as mesmas informações.
+- **Nenhum dado é apagado**:
+  - O navegador continua guardando tudo, como antes. O site só *copia* os dados para o Notion.
+  - Ao abrir o site, ele guarda automaticamente as 5 últimas versões dos dados deste navegador.
+  - Antes da primeira sincronização, é feita mais uma cópia de segurança.
+  - Excluir algo no site **não apaga a linha no Notion**: ela só fica marcada na coluna **Excluído**, com todos os dados preservados.
+  - Se o mesmo registro foi editado em dois aparelhos, vale a versão do Notion, e a versão do navegador fica guardada como backup.
+  - Novos botões: **Baixar backup completo** e **Restaurar / juntar backup**. Restaurar só acrescenta o que estiver faltando e nunca apaga nem sobrescreve.
+- O código antigo do Supabase foi removido. Ele substituía os dados do navegador ao conectar.
 
-## Segurança
-A política RLS limita leitura e escrita ao e-mail `rarawellnessclub@gmail.com`. Não publique a chave `service_role`. O site precisa ser publicado com HTTPS.
+## Arquivos do projeto (todos na raiz do projeto da Vercel)
 
-## Importante sobre migração
-Antes do primeiro login com sincronização, mantenha no navegador que contém os dados mais completos a versão atual do RARA. O primeiro login inicializa a linha compartilhada a partir dos dados locais se ela ainda não existir. Depois que a linha existir, ela passa a ser a fonte principal para todos os dispositivos.
+```
+index.html      → o site
+api/            → funções do servidor (login e Notion)
+vercel.json     → tempo máximo das funções
+README.md       → este guia
+```
+
+---
+
+## Passo 1 — Criar a conta Gmail `rarawellnessclub@gmail.com`
+
+1. Abra uma **janela anônima** e acesse https://accounts.google.com/signup
+2. Preencha **Nome:** `RARA` e **Sobrenome:** `Wellness Club`. Depois, informe a data de nascimento e o gênero.
+3. Em "Como você quer fazer login", escolha **Criar seu próprio endereço do Gmail** e digite `rarawellnessclub`.
+   - Se o nome já estiver em uso, escolha outro (ex.: `rarawellnessclub.oficial`) e use esse endereço em todos os passos abaixo.
+4. Crie uma senha forte e guarde-a num lugar seguro.
+5. Confirme o número de celular (de Denise ou Maria Eduarda) e coloque um e-mail de recuperação.
+6. Aceite os termos.
+7. Recomendado: ative a verificação em duas etapas em https://myaccount.google.com/security
+
+## Passo 2 — Criar o "ID do cliente" do login Google (gratuito)
+
+Entre no Google com a conta `rarawellnessclub@gmail.com`.
+
+1. Acesse https://console.cloud.google.com
+2. No topo, clique em **Selecionar projeto → Novo projeto**. Use o nome `RARA Hub` e clique em **Criar**. Depois, selecione o projeto criado.
+3. No menu, vá em **APIs e serviços → Tela de consentimento OAuth** (às vezes aparece como **Google Auth Platform**) e clique em **Começar**:
+   - **Nome do app:** `RARA Hub` · **E-mail de suporte:** `rarawellnessclub@gmail.com`
+   - **Público:** Externo
+   - **Dados de contato:** `rarawellnessclub@gmail.com` → aceite e clique em **Criar**
+4. Em **Público**, clique em **Publicar app**. O login usa só nome e e-mail, então não precisa de verificação do Google.
+   - Outra opção é deixar em "Teste" e incluir cada e-mail que vai entrar em **Usuários de teste**.
+5. Vá em **Clientes → Criar cliente**:
+   - **Tipo de aplicativo:** Aplicativo da Web · **Nome:** `RARA Hub site`
+   - **Origens JavaScript autorizadas:** clique em **Adicionar URI** e cole o endereço do site, por exemplo `https://seu-site.vercel.app`. Se tiver domínio próprio, adicione também.
+   - Clique em **Criar** e copie o **ID do cliente**, que termina em `.apps.googleusercontent.com`. A chave secreta não é necessária.
+
+## Passo 3 — Conectar o Notion (o banco já foi criado)
+
+O banco **RARA · Dados**, com todas as colunas e visualizações, já está pronto no Notion da conta `rarawellnessclub@gmail.com`:
+- Página: https://app.notion.com/p/419ead68160481b8be7fef76d13a876c
+- Banco: https://app.notion.com/p/419ead681604816ca3feef0cbe6cfb61
+- ID do banco (para a Vercel): `419ead681604816ca3feef0cbe6cfb61`
+
+1. Com a conta da RARA logada no Notion, acesse https://www.notion.so/profile/integrations e clique em **+ Nova integração**:
+   - **Nome:** `RARA Hub` · **Workspace:** Espaço de Rara Wellness Club · **Tipo:** Interna → **Salvar**.
+   - Na aba **Configuração**, mantenha marcadas as opções **Ler conteúdo**, **Atualizar conteúdo** e **Inserir conteúdo**.
+   - Clique em **Mostrar** ao lado de **Segredo de integração interna** e copie o código (começa com `ntn_`). Não compartilhe com ninguém.
+2. Abra a página **RARA Hub** (link acima). No canto superior direito, clique em **•••** → **Conexões** → procure **RARA Hub** → **Confirmar**.
+   - Ao conectar a página, o banco que está dentro dela também fica acessível.
+
+## Passo 4 — Configurar a Vercel
+
+1. No projeto da Vercel, vá em **Settings → Environment Variables** e crie as variáveis abaixo (marque Production, Preview e Development):
+
+| Nome | Valor |
+|---|---|
+| `GOOGLE_CLIENT_ID` | o ID do cliente do Passo 2 |
+| `ALLOWED_EMAILS` | `rarawellnessclub@gmail.com` (para mais de um e-mail, separe por vírgula) |
+| `SESSION_SECRET` | uma sequência longa e aleatória com 40 caracteres ou mais (não compartilhe) |
+| `NOTION_TOKEN` | o segredo `ntn_...` do Passo 3 |
+| `NOTION_DATABASE_ID` | `419ead681604816ca3feef0cbe6cfb61` |
+| `SHARED_WORKSPACE` | *(opcional)* deixe vazio. Se Denise e Maria Eduarda forem entrar com e-mails pessoais diferentes e quiserem ver os mesmos dados, coloque `rarawellnessclub@gmail.com` aqui. |
+
+2. Envie os arquivos desta pasta para o projeto: `index.html`, a pasta `api/` e `vercel.json`. Faça isso do mesmo jeito que o site é publicado hoje (GitHub ou upload). A pasta `api/` precisa ficar **ao lado** do `index.html`.
+3. Vá em **Deployments → ••• → Redeploy**.
+
+## Passo 5 — Primeira sincronização (no navegador que tem os dados)
+
+**Faça isso no computador ou celular onde as inscrições e os pagamentos foram registrados.**
+
+1. Abra o site publicado. No menu lateral, clique em **Baixar backup completo** e guarde o arquivo `.json`.
+2. Clique em **Conta & sincronização → Fazer login com o Google** e entre com `rarawellnessclub@gmail.com`.
+3. Aguarde até aparecer **Sincronizado**. Na primeira vez, todos os registros são enviados, o que leva cerca de 1 minuto. Dá para usar o site enquanto isso.
+4. Confira no Notion: filtre **Tipo = Financeiro**. Devem aparecer **46 linhas**, com receitas de **R$ 2.619,76** e despesas de **R$ 4.827,04** (valores do CSV de 15/11).
+5. Nos outros aparelhos, basta entrar com o mesmo login: os dados aparecem.
+   - Se algum outro aparelho tiver registros que só existem nele, eles também são enviados quando a pessoa entrar.
+
+## Dicas para o Notion
+
+- O banco já vem com as abas **💰 Financeiro, 🎟️ Inscrições, 🛍️ Compras, 📅 Eventos, 🤝 Parceiros, 🗂️ Tudo (ativos)** e **🗑️ Excluídos (recuperação)**, sem as colunas técnicas.
+- Não edite nem apague as colunas técnicas **Dados, Hash, Chave, Conta, Ordem e Excluído**: o site depende delas.
+- **Edite os registros pelo site.** As colunas visíveis do Notion são um espelho: mudanças feitas direto no Notion não voltam para o site.
+- Para recuperar algo excluído, use o backup `.json` em **Restaurar / juntar backup**, ou desmarque **Excluído** no Notion e peça ajuda para reimportar.
+
+## Se algo der errado
+
+- **"O login ainda não foi configurado"**: falta alguma variável na Vercel, ou o redeploy não foi feito.
+- **Botão do Google não aparece / erro "origin_mismatch"**: o endereço do site não está em *Origens JavaScript autorizadas* (Passo 2.5).
+- **"O Notion não encontrou o banco"**: a integração não foi adicionada em **Conexões** na página RARA Hub (Passo 3.2).
+- Em qualquer erro, os dados **continuam salvos no navegador**. Corrija a configuração e clique em **Sincronizar agora**.
