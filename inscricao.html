@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inscrição | RARA Wellness Club</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#344b55;--muted:#829096;--blue:#b9d5df;--blue2:#e8f1f3;--pink:#f3dfe0;--pink2:#fbf1f0;--green2:#f1f5ef;--cream:#f7f4ee;--paper:#fffdfa;--brown:#9a806d;--line:#e9e5df}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:620px;margin:0 auto;padding:28px 18px 70px}
+.brand{text-align:center;margin-bottom:22px}
+.brand-name{font:500 40px Fraunces,serif;letter-spacing:3px;color:#9bbdca;line-height:1}
+.brand-sub{font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brown);margin-top:6px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:26px 24px;box-shadow:0 14px 40px #344b5510;margin-bottom:16px}
+.hero{background:linear-gradient(140deg,#fffdfb,#eef4f6);position:relative;overflow:hidden}
+.hero:after{content:"r";font:240px Fraunces,serif;position:absolute;right:-10px;bottom:-110px;color:#ffffff99;pointer-events:none}
+.eyebrow{font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:#a18d7d}
+h1{font:500 34px/1.1 Fraunces,serif;margin:8px 0 12px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pill{font-size:12px;border-radius:30px;padding:6px 12px;background:#fff;border:1px solid var(--line)}
+.desc{white-space:pre-wrap;color:#5f7279;position:relative;z-index:1}
+.lot{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--blue2);border-radius:14px;padding:14px 16px;margin-top:18px;position:relative;z-index:1}
+.lot b{font:500 26px Fraunces,serif}
+.lot small{display:block;color:#687e84;font-size:12px}
+.hot{color:#a5605e;font-weight:600}
+h2{font:500 22px Fraunces,serif;margin:0 0 4px}
+.field{display:grid;gap:6px;margin:16px 0}
+label{font-size:12px;font-weight:600;color:#55686e}
+label .opt{font-weight:400;color:#9aa4a4}
+input,select,textarea{font:inherit;width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 13px;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#a9c9d4;box-shadow:0 0 0 3px #e8f1f3}
+textarea{min-height:90px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#5f7279;margin:18px 0}
+.check span{font-weight:400}
+.check input{width:auto;margin-top:4px;accent-color:#8eabb6}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;background:var(--ink);color:#fff;font:600 15px 'DM Sans',sans-serif;cursor:pointer;text-align:center;text-decoration:none}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.soft{background:var(--blue2);color:var(--ink)}
+.secure{text-align:center;font-size:12px;color:#8a9798;margin-top:12px}
+.error{background:var(--pink2);color:#8d5f5f;border-radius:12px;padding:12px 14px;font-size:13px;margin-top:14px}
+.center{text-align:center}
+.big{font-size:44px;margin:4px 0}
+.hp{position:absolute;left:-5000px;width:1px;height:1px;overflow:hidden}
+.hidden{display:none!important}
+.loading{text-align:center;color:var(--muted);padding:40px 0}
+footer{text-align:center;font-size:11px;color:#a0a8a8;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="brand"><div class="brand-name">rara</div><div class="brand-sub">wellness club</div></div>
+ <div id="loading" class="loading">Carregando…</div>
+
+ <div id="closed" class="card center hidden">
+  <div class="big">🤍</div><h2 id="closedTitle">Inscrições encerradas</h2>
+  <p class="desc" id="closedText">As inscrições para este evento não estão abertas no momento. Acompanhe a RARA no Instagram para saber dos próximos encontros.</p>
+ </div>
+
+ <div id="result" class="card center hidden"></div>
+
+ <div id="page" class="hidden">
+  <div class="card hero">
+   <div class="eyebrow">Inscrição · RARA Wellness Club</div>
+   <h1 id="evName"></h1>
+   <div class="meta" id="evMeta"></div>
+   <div class="desc" id="evDesc"></div>
+   <div class="lot" id="lotBox"></div>
+  </div>
+
+  <form class="card" id="form" novalidate>
+   <h2>Seus dados</h2>
+   <p class="desc" style="margin:0;font-size:13px">Preencha com atenção — usaremos essas informações para organizar sua experiência.</p>
+   <div class="field"><label for="name">Nome completo</label><input id="name" autocomplete="name" required></div>
+   <div class="field"><label for="phone">WhatsApp com DDD</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(99) 99999-9999" required></div>
+   <div class="field"><label for="email">E-mail</label><input id="email" type="email" autocomplete="email" required></div>
+   <div class="field"><label for="ageRange">Faixa etária</label><select id="ageRange" required><option value="">Selecione</option><option>Até 19</option><option>20-25</option><option>26-35</option><option>36-45</option><option>46+</option></select></div>
+   <div class="field"><label for="dietary">Restrição alimentar ou alergia <span class="opt">(opcional)</span></label><input id="dietary" placeholder="Ex.: sem lactose, vegetariana…"></div>
+   <div class="field"><label for="howFound">Como conheceu a RARA? <span class="opt">(opcional)</span></label><select id="howFound"><option value="">Selecione</option><option>Instagram</option><option>Indicação de amiga</option><option>WhatsApp</option><option>Parceira / marca</option><option>Outro</option></select></div>
+   <div id="extras"></div>
+   <div class="hp" aria-hidden="true"><label>Site<input id="website" tabindex="-1" autocomplete="off"></label></div>
+   <label class="check"><input type="checkbox" id="consent"> <span>Autorizo a RARA Wellness Club a usar estes dados para organizar minha inscrição e falar comigo sobre o evento.</span></label>
+   <button class="btn" id="submit" type="submit">Continuar para o pagamento</button>
+   <div class="secure">🔒 Pagamento seguro pelo Mercado Pago · Pix ou cartão de crédito</div>
+   <div class="error hidden" id="error"></div>
+  </form>
+ </div>
+ <footer>RARA Wellness Club · made with care 🤎</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const slug=(location.pathname.match(/\/inscricao\/([^/?#]+)/)||[])[1]||params.get('evento')||'';
+let EVENT=null;
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function dateLong(d){if(!d)return '';const x=new Date(d+'T12:00:00');return x.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function show(id){['loading','closed','result','page'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+async function getJSON(url,opts){const r=await fetch(url,opts);let j={};try{j=await r.json()}catch{}if(!r.ok){const e=new Error(j.error||'Erro '+r.status);e.status=r.status;throw e}return j}
+
+function renderEvent(ev){
+ EVENT=ev;
+ document.title=`Inscrição · ${ev.name} | RARA`;
+ $('evName').textContent=ev.name;
+ $('evMeta').innerHTML=[ev.date?`📅 ${esc(dateLong(ev.date))}`:'',ev.place?`📍 ${esc(ev.place)}`:''].filter(Boolean).map(t=>`<span class="pill">${t}</span>`).join('');
+ $('evDesc').textContent=ev.description||'';
+ if(!ev.lot){show('closed');$('closedTitle').textContent='Vagas esgotadas';$('closedText').textContent='As vagas para este encontro esgotaram. 💛 Fique de olho no Instagram da RARA para os próximos eventos.';return}
+ $('lotBox').innerHTML=`<div><small>${esc(ev.lot.name)}${ev.lot.until?` · até ${new Date(ev.lot.until+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`:''}</small>${ev.lot.lastSpots?`<small class="hot">Últimas ${ev.lot.lastSpots} vaga${ev.lot.lastSpots>1?'s':''} neste lote</small>`:''}</div><b>${money(ev.lot.price)}</b>`;
+ $('extras').innerHTML=(ev.questions||[]).map(q=>{
+  const lab=`<label for="q_${esc(q.id)}">${esc(q.label)}${q.required?'':' <span class="opt">(opcional)</span>'}</label>`;
+  const ctl=q.type==='textarea'?`<textarea id="q_${esc(q.id)}" data-q="${esc(q.id)}"></textarea>`:q.type==='select'?`<select id="q_${esc(q.id)}" data-q="${esc(q.id)}"><option value="">Selecione</option>${q.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`:`<input id="q_${esc(q.id)}" data-q="${esc(q.id)}">`;
+  return `<div class="field">${lab}${ctl}</div>`;
+ }).join('');
+ $('submit').textContent=`Continuar para o pagamento · ${money(ev.lot.price)}`;
+ show('page');
+}
+function fail(msg){const e=$('error');e.textContent=msg;e.classList.remove('hidden');e.scrollIntoView({behavior:'smooth',block:'center'})}
+function maskPhone(v){const d=v.replace(/\D/g,'').slice(0,11);if(d.length<3)return d;if(d.length<8)return `(${d.slice(0,2)}) ${d.slice(2)}`;return `(${d.slice(0,2)}) ${d.slice(2,d.length-4)}-${d.slice(-4)}`}
+$('phone').addEventListener('input',e=>{e.target.value=maskPhone(e.target.value)});
+
+$('form').addEventListener('submit',async e=>{
+ e.preventDefault();$('error').classList.add('hidden');
+ const v=id=>$(id).value.trim();
+ if(v('name').split(/\s+/).length<2)return fail('Informe seu nome completo.');
+ if(v('phone').replace(/\D/g,'').length<10)return fail('Informe seu WhatsApp com DDD.');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email')))return fail('Informe um e-mail válido.');
+ if(!v('ageRange'))return fail('Escolha sua faixa etária.');
+ const extras={};
+ for(const q of EVENT.questions||[]){const val=$('q_'+q.id).value.trim();if(q.required&&!val)return fail('Responda: '+q.label);extras[q.id]=val}
+ if(!$('consent').checked)return fail('Marque a autorização de uso dos dados para continuar.');
+ const btn=$('submit');btn.disabled=true;btn.textContent='Preparando seu pagamento…';
+ try{
+  const r=await getJSON('/api/public-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,lotId:EVENT.lot.id,website:v('website'),answers:{name:v('name'),phone:v('phone'),email:v('email'),ageRange:v('ageRange'),dietary:v('dietary'),howFound:v('howFound'),extras,consent:true}})});
+  try{localStorage.setItem('rara_last_reg_'+slug,r.registrationId)}catch{}
+  location.href=r.paymentUrl;
+ }catch(err){
+  btn.disabled=false;btn.textContent=`Continuar para o pagamento · ${money(EVENT.lot.price)}`;
+  fail(err.message||'Não foi possível concluir agora. Tente novamente.');
+  if(err.status===409)loadEvent(true);
+ }
+});
+
+async function showResult(status,regId){
+ const box=$('result');show('result');
+ const ev=EVENT||{};
+ const okHtml=first=>`<div class="big">🤍</div><h2>Inscrição confirmada${first?', '+esc(first):''}!</h2><p class="desc">Seu pagamento foi aprovado e sua vaga em <b>${esc(ev.name||'nosso encontro')}</b> está garantida.${ev.date?` Nos vemos ${esc(dateLong(ev.date))}.`:''}</p>${ev.successMessage?`<p class="desc">${esc(ev.successMessage)}</p>`:''}${ev.groupLink?`<a class="btn" href="${esc(ev.groupLink)}" target="_blank" rel="noopener" style="margin-top:16px">Entrar no grupo das participantes</a>`:''}`;
+ if(status==='ok'){
+  box.innerHTML='<div class="big">⏳</div><h2>Confirmando seu pagamento…</h2><p class="desc">Só um instante.</p>';
+  for(let i=0;i<10&&regId;i++){
+   try{const s=await getJSON('/api/public-status?r='+encodeURIComponent(regId));if(s.status==='Pago'){box.innerHTML=okHtml(s.firstName);return}}catch{}
+   await new Promise(r=>setTimeout(r,2500));
+  }
+  box.innerHTML=okHtml('')+'<p class="secure">A confirmação pode levar alguns minutos para aparecer no nosso sistema.</p>';
+ }else if(status==='pendente'){
+  box.innerHTML=`<div class="big">⏳</div><h2>Pagamento em processamento</h2><p class="desc">Assim que o Mercado Pago confirmar, sua vaga fica garantida automaticamente. Se pagou por Pix, isso costuma levar poucos minutos.</p>`;
+ }else{
+  box.innerHTML=`<div class="big">💛</div><h2>O pagamento não foi concluído</h2><p class="desc">Nenhum valor foi cobrado. Você pode tentar de novo — seus dados precisam ser preenchidos outra vez.</p><button class="btn" style="margin-top:16px" onclick="history.replaceState(null,'',location.pathname);loadEvent()">Tentar novamente</button>`;
+ }
+}
+async function loadEvent(keepForm){
+ if(!slug){show('closed');return}
+ try{const ev=await getJSON('/api/public-event?slug='+encodeURIComponent(slug));if(keepForm&&EVENT){EVENT=ev;if(!ev.lot)return renderEvent(ev);$('lotBox').innerHTML='';renderEvent(ev);return}renderEvent(ev)}
+ catch(e){show('closed');if(e.status!==404){$('closedTitle').textContent='Não foi possível carregar';$('closedText').textContent='Tente atualizar a página em alguns instantes.'}}
+}
+(async()=>{
+ const status=params.get('status');
+ if(status){try{EVENT=await getJSON('/api/public-event?slug='+encodeURIComponent(slug))}catch{}showResult(status,params.get('r'));return}
+ loadEvent();
+})();
+</script>
+</body>
+</html>

@@ -18,6 +18,8 @@
 .partner-edit-btn{padding:8px 15px!important;font-size:13px!important;min-height:36px}
 
 .userchip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fffdfa;border-radius:30px;padding:3px 12px 3px 3px;color:var(--ink);font-size:12px}.userchip:hover{background:var(--blue2)}.who-line{font-size:10px;color:#a3a9a6;margin-top:4px}.who-btn{min-width:150px;padding:14px 18px;font-size:14px}
+.signup-box{background:linear-gradient(120deg,#fffdfb,#eef4f6);border:1px solid #dce9ed;border-radius:14px;padding:15px 16px;margin:4px 0 16px}.signup-box .link{font-size:11px;color:#66818b;overflow-wrap:anywhere;margin-top:6px}.row-grid{display:grid;gap:7px;align-items:end;margin-bottom:8px}.row-grid input,.row-grid select{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.row-grid .mini{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#8b9697;display:block;margin-bottom:3px}.lot-row{grid-template-columns:1.5fr .8fr .7fr 1fr 28px}.q-row{grid-template-columns:1.6fr .9fr 1.2fr 58px 28px}.rm{border:0;background:transparent;color:#b17d7c;font-size:18px;padding:6px 0}.subhead{font:500 16px Fraunces,serif;margin:20px 0 4px}
+@media(max-width:650px){.lot-row,.q-row{grid-template-columns:1fr 1fr}}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -328,6 +330,29 @@ if(type==='partner'||type==='partner-edit'){
  ${f('Observações','notes','textarea',item?.notes||'')}`;
  if(editing) window.editingPartnerId=item?.id||null;
 }
+if(type==='eventform'){
+ const ev=data.events.find(e=>e.id===extra.id);if(!ev)return;
+ window.editingFormEventId=ev.id;
+ const fm=ev.form||{};
+ title='Página de inscrição · '+ev.name;
+ fields=`<div class="notice">Esta é a página que as clientes veem: informações do evento, formulário e pagamento pelo Mercado Pago (Pix ou cartão). Cada inscrição aparece sozinha em <b>Inscrições</b>; quando o pagamento é aprovado, vira <b>Pago</b> e entra no <b>Financeiro</b>.</div>
+ <label class="checkline" style="border:0"><input type="checkbox" name="enabled" ${fm.enabled?'checked':''}> <span><b>Inscrições abertas</b> — a página fica disponível para as clientes</span></label>
+ ${f('Endereço da página','slug','text',fm.slug||slugify(ev.name),'placeholder="ex.: the-soft-reset"')}
+ <div class="muted" style="font-size:11px;margin:-6px 0 6px">${esc(location.origin)}/inscricao/<b id="slugPreview">${esc(fm.slug||slugify(ev.name))}</b></div>
+ ${f('Texto de apresentação do evento','pageText','textarea',fm.pageText??ev.description??'','placeholder="O que vai acontecer, o que está incluso, horário…"')}
+ <div class="subhead">Lotes</div><div class="muted" style="font-size:11px;line-height:1.6">Na ordem: a página mostra o primeiro lote que ainda tem vagas e está dentro da data. Ao esgotar ou vencer, passa sozinha para o próximo. Deixe vagas ou data em branco para não limitar.</div>
+ <div id="lotRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addLotRow()">＋ adicionar lote</button>
+ <div class="subhead">Perguntas extras deste evento</div><div class="muted" style="font-size:11px;line-height:1.6">O formulário já pede: nome, WhatsApp, e-mail, faixa etária, restrição alimentar e como conheceu a RARA. Para escolha, separe as opções com ponto e vírgula (;).</div>
+ <div id="qRows" style="margin-top:10px"></div><button type="button" class="small-link" onclick="addQuestionRow()">＋ adicionar pergunta</button>
+ <div class="subhead">Depois do pagamento</div>
+ ${f('Mensagem de confirmação (opcional)','successMessage','textarea',fm.successMessage||'','placeholder="Ex.: Em breve enviaremos as orientações pelo WhatsApp."')}
+ ${f('Link do grupo de WhatsApp das participantes (opcional)','groupLink','url',fm.groupLink||'','placeholder="https://chat.whatsapp.com/..."')}`;
+ body.innerHTML=fields;document.getElementById('modalTitle').textContent=title;document.getElementById('saveModal').onclick=saveModal;
+ (fm.lots&&fm.lots.length?fm.lots:[{}]).forEach(addLotRow);
+ (fm.questions||[]).forEach(addQuestionRow);
+ body.querySelector('[name="slug"]').addEventListener('input',e=>{document.getElementById('slugPreview').textContent=slugify(e.target.value)});
+ return;
+}
 if(type==='checktask'){title='Novo post-it';let opts=data.checklists.map(b=>`<option value="${esc(b.id)}" ${b.id===selectedChecklistBoard?'selected':''}>${esc(b.name)}</option>`).join('');fields=`${f('Título da tarefa','title','text','','required placeholder="Ex.: Finalizar proposta para marcas"')}${f('Descrição','description','textarea','','placeholder="Detalhes, contexto ou próximos passos..."')}${f('Subaba','board','select','',opts)}${f('Prioridade','priority','select','','<option value="Urgente">Urgente</option><option value="Média" selected>Média</option><option value="Baixa">Baixa</option>')}${f('Prazo (opcional)','due','date')}`}
 body.innerHTML=fields;document.getElementById('modalTitle').textContent=title;document.getElementById('saveModal').onclick=saveModal}
 function val(n){return document.querySelector(`#modalBody [name="${n}"]`)?.value||''}
@@ -423,6 +448,22 @@ function saveModal(){
    if(!Array.isArray(data.links)) data.links=[];
    data.links.unshift({id,title,url:parsed.href,category:val('category')||'Outros',notes:val('notes').trim(),created:new Date().toISOString()});
   }
+  else if(modalType==='eventform'){
+   const ev=data.events.find(e=>e.id===window.editingFormEventId);
+   if(!ev){alert('Evento não encontrado.');return}
+   const slug=slugify(val('slug')||ev.name);
+   if(!slug){alert('Defina o endereço da página.');return}
+   const clash=data.events.find(e=>e.id!==ev.id&&e.form&&slugify(e.form.slug||e.name)===slug);
+   if(clash){alert(`O endereço "${slug}" já é usado por ${clash.name}. Escolha outro.`);return}
+   const lots=[...document.querySelectorAll('#lotRows .lot-row')].map(r=>({id:r.dataset.id||uid(),name:r.querySelector('[data-k=name]').value.trim(),price:Number(String(r.querySelector('[data-k=price]').value).replace(',','.'))||0,limit:Number(r.querySelector('[data-k=limit]').value)||0,until:r.querySelector('[data-k=until]').value})).filter(l=>l.name||l.price);
+   for(const l of lots){if(!l.name){alert('Dê um nome a cada lote.');return}if(!(l.price>0)){alert(`Informe o preço do lote "${l.name}".`);return}}
+   const enabled=!!document.querySelector('#modalBody [name="enabled"]').checked;
+   if(enabled&&!lots.length){alert('Cadastre pelo menos um lote para abrir as inscrições.');return}
+   const questions=[...document.querySelectorAll('#qRows .q-row')].map(r=>({id:r.dataset.id||uid(),label:r.querySelector('[data-k=label]').value.trim(),type:r.querySelector('[data-k=type]').value,options:r.querySelector('[data-k=options]').value.trim(),required:r.querySelector('[data-k=required]').checked})).filter(q=>q.label);
+   for(const q of questions)if(q.type==='select'&&!q.options){alert(`Informe as opções da pergunta "${q.label}" (separadas por ;).`);return}
+   ev.form={enabled,slug,pageText:val('pageText').trim(),lots,questions,successMessage:val('successMessage').trim(),groupLink:val('groupLink').trim()};
+   window.editingFormEventId=null;
+  }
   else if(modalType==='checktask'){
    const title=val('title').trim();
    if(!title){alert('Digite um título para o post-it.');return}
@@ -480,7 +521,7 @@ function renderEventDetail(){
   }).join('');
   return `<section class="eventpage ${page.id===active.id?'':'hidden'}" id="ep-${page.id}"><div class="section-head"><div><div class="eyebrow">PÁGINA DO EVENTO</div><h3 style="font:500 23px Fraunces;margin:5px 0">${esc(page.name)}</h3><span class="muted">${page.tasks.filter(t=>!(typeof t==='object'&&t.done)).length} tarefas pendentes</span></div><button class="btn" onclick="addTask('${event.id}','${page.id}')">＋ Adicionar tarefa</button></div>${tasks||'<div class="empty">Nenhuma tarefa nesta página. Adicione a primeira.</div>'}</section>`;
  }).join('');
- root.innerHTML=`<div class="section-head"><div><div class="eyebrow">EVENT WORKSPACE</div><h2 style="font:500 27px Fraunces;margin:5px 0">${esc(event.name)}</h2><span class="muted">${dateBR(event.date)} · ${esc(event.place||'Local a definir')} · ${esc(event.status||'Planejamento')}</span></div><button class="small-link" onclick="addPage('${event.id}')">＋ Nova página</button></div><div class="tabs">${tabs}</div><div id="eventPages">${pages}</div>`;
+ root.innerHTML=`<div class="section-head"><div><div class="eyebrow">EVENT WORKSPACE</div><h2 style="font:500 27px Fraunces;margin:5px 0">${esc(event.name)}</h2><span class="muted">${dateBR(event.date)} · ${esc(event.place||'Local a definir')} · ${esc(event.status||'Planejamento')}</span></div><button class="small-link" onclick="addPage('${event.id}')">＋ Nova página</button></div>${signupBox(event)}<div class="tabs">${tabs}</div><div id="eventPages">${pages}</div>`;
 }
 function renderEvents(){
  let list=document.getElementById('eventList');
@@ -572,7 +613,7 @@ function renderRegistrations(){
  document.getElementById('registrationsBody').innerHTML=filtered.map(r=>`<tr>
   <td><b>${esc(r.attendee)}</b><div class="muted">${esc(r.phone||r.email||'')}</div>${whoLine(r)}</td>
   <td>${esc(r.eventName||'—')}</td><td>${esc(r.lot||'—')}</td><td>${r.paymentDate?dateBR(r.paymentDate):'—'}</td>
-  <td><span class="pill ${r.paymentStatus==='Pago'?'':'pink'}">${esc(r.paymentStatus||'Pendente')}</span></td>
+  <td><span class="pill ${r.paymentStatus==='Pago'?'':'pink'}">${esc(r.paymentStatus||'Pendente')}</span>${r.source==='Inscrição online'?'<div class="who-line">online · '+esc(r.paymentMethod||'')+'</div>':''}</td>
   <td class="amount-in">${money(r.amount||0)}</td>
   <td><div class="registration-actions"><button class="small-link" onclick="editRegistration('${r.id}')">editar</button><button class="small-link" onclick="removeRegistration('${r.id}')">excluir</button></div></td>
  </tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhuma inscrição encontrada.</td></tr>';
@@ -1046,6 +1087,30 @@ const softResetImportResult=HAD_LOCAL_DATA?importSoftResetRegistrationsBatch():{
 const historicalPurchaseImportCount=HAD_LOCAL_DATA?importHistoricalRaraPurchases():0;
 renderAll();
 const initialRoute=location.hash.slice(1);if(initialRoute)go(initialRoute,false);
+
+// ================= Página pública de inscrição (configuração no painel) =================
+function slugify(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)}
+function signupUrl(ev){return location.origin+'/inscricao/'+slugify((ev.form&&ev.form.slug)||ev.name)}
+function localLotCounts(ev){const c={};(data.registrations||[]).filter(r=>r.eventId===ev.id&&r.paymentStatus==='Pago').forEach(r=>{const k=r.lotId||r.lot;c[k]=(c[k]||0)+1});return c}
+function signupBox(ev){
+ const fm=ev.form;
+ if(!fm||!fm.lots||!fm.lots.length)return `<div class="signup-box"><div class="section-head" style="margin:0"><div><b>Página de inscrição</b><div class="muted" style="font-size:11px">Crie um formulário com pagamento pelo Mercado Pago para este evento.</div></div><button class="btn" onclick="openModal('eventform',{id:'${ev.id}'})">Criar página</button></div></div>`;
+ const c=localLotCounts(ev);
+ const lots=fm.lots.map(l=>`<span class="pill ${l.limit&&(c[l.id]||0)+(c[l.name]||0)>=l.limit?'pink':'blue'}">${esc(l.name)} · ${money(l.price)} · ${(c[l.id]||0)+(c[l.name]||0)}${l.limit?'/'+l.limit:''} pagas</span>`).join(' ');
+ return `<div class="signup-box"><div class="section-head" style="margin:0 0 6px"><div><b>Página de inscrição</b> <span class="pill ${fm.enabled?'':'pink'}">${fm.enabled?'Aberta':'Fechada'}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn soft" onclick="copySignupLink('${ev.id}')">Copiar link</button><a class="btn outline" href="${esc(signupUrl(ev))}" target="_blank" rel="noopener" style="text-decoration:none">Abrir ↗</a><button class="btn" onclick="openModal('eventform',{id:'${ev.id}'})">Configurar</button></div></div><div style="display:flex;gap:6px;flex-wrap:wrap">${lots}</div><div class="link">${esc(signupUrl(ev))}</div>${fm.enabled&&!SYNC.account?'<div class="muted" style="font-size:11px;margin-top:6px;color:#b17d7c">Entre em “Conta & sincronização” para a página ficar no ar com estas configurações.</div>':''}</div>`;
+}
+function copySignupLink(id){const ev=data.events.find(e=>e.id===id);if(!ev)return;const u=signupUrl(ev);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(u).then(()=>alert('Link copiado:\n'+u)).catch(()=>prompt('Copie o link:',u));else prompt('Copie o link:',u)}
+function addLotRow(l={}){
+ const d=document.createElement('div');d.className='row-grid lot-row';d.dataset.id=l.id||uid();
+ d.innerHTML=`<div><span class="mini">Nome do lote</span><input data-k="name" value="${esc(l.name||'')}" placeholder="Primeiros Momentos"></div><div><span class="mini">Preço (R$)</span><input data-k="price" type="number" min="0" step="0.01" value="${l.price??''}"></div><div><span class="mini">Vagas</span><input data-k="limit" type="number" min="0" step="1" value="${l.limit||''}" placeholder="—"></div><div><span class="mini">Vale até</span><input data-k="until" type="date" value="${esc(l.until||'')}"></div><button type="button" class="rm" title="remover" onclick="this.parentElement.remove()">×</button>`;
+ document.getElementById('lotRows').appendChild(d);
+}
+function addQuestionRow(q={}){
+ const d=document.createElement('div');d.className='row-grid q-row';d.dataset.id=q.id||uid();
+ const t=q.type||'text';
+ d.innerHTML=`<div><span class="mini">Pergunta</span><input data-k="label" value="${esc(q.label||'')}" placeholder="Ex.: Tamanho da camiseta"></div><div><span class="mini">Tipo</span><select data-k="type"><option value="text" ${t==='text'?'selected':''}>Resposta curta</option><option value="textarea" ${t==='textarea'?'selected':''}>Resposta longa</option><option value="select" ${t==='select'?'selected':''}>Escolha</option></select></div><div><span class="mini">Opções (se escolha)</span><input data-k="options" value="${esc(q.options||'')}" placeholder="P; M; G"></div><label style="font-size:10px;display:flex;gap:4px;align-items:center;padding-bottom:9px"><input type="checkbox" data-k="required" ${q.required?'checked':''} style="width:auto">obrig.</label><button type="button" class="rm" title="remover" onclick="this.parentElement.remove()">×</button>`;
+ document.getElementById('qRows').appendChild(d);
+}
 
 // ================= Quem está usando (Denise / Maria Eduarda) =================
 const USER_KEY='rara_user_name';

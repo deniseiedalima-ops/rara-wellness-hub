@@ -22,8 +22,9 @@
 ## Arquivos do projeto (todos na raiz do projeto da Vercel)
 
 ```
-index.html      → o site
-api/            → funções do servidor (login e Notion)
+index.html      → o painel (área interna)
+inscricao.html  → página pública de inscrição das clientes
+api/            → funções do servidor (login, Notion e Mercado Pago)
 vercel.json     → tempo máximo das funções
 README.md       → este guia
 ```
@@ -112,3 +113,53 @@ O banco **RARA · Dados**, com todas as colunas e visualizações, já está pro
 - **Botão do Google não aparece / erro "origin_mismatch"**: o endereço do site não está em *Origens JavaScript autorizadas* (Passo 2.5).
 - **"O Notion não encontrou o banco"**: a integração não foi adicionada em **Conexões** na página RARA Hub (Passo 3.2).
 - Em qualquer erro, os dados **continuam salvos no navegador**. Corrija a configuração e clique em **Sincronizar agora**.
+
+---
+
+## Página de inscrição para clientes + pagamento Mercado Pago
+
+Cada evento pode ter uma página pública, por exemplo `https://rara-wellness-hub.vercel.app/inscricao/the-soft-reset`. A cliente vê só essa página: as informações do evento, o formulário e o pagamento por Pix ou cartão de crédito no Mercado Pago. O painel interno não aparece para ela.
+
+**Como funciona**
+1. A cliente preenche o formulário: nome, WhatsApp, e-mail, faixa etária, restrição alimentar, como conheceu a RARA e as perguntas extras do evento.
+2. Ela é levada ao Mercado Pago com o preço do lote atual. O preço é sempre calculado pelo servidor, então não dá para alterar.
+3. A inscrição aparece na hora em **Inscrições** como *Pendente* e marcada como "online".
+4. Quando o pagamento é aprovado, o Mercado Pago avisa o site sozinho:
+   - a inscrição vira **Pago**;
+   - a receita entra no **Financeiro** com o valor **líquido** recebido. As observações guardam o valor pago e o número do pagamento.
+5. Se houver reembolso, a inscrição fica como *Reembolsado* e a receita é marcada como excluída. Ela continua guardada no Notion.
+
+**Lotes**
+- A página mostra o primeiro lote que ainda tem vagas e está dentro da data.
+- Ao esgotar ou vencer, passa sozinha para o próximo.
+- Uma inscrição que está pagando segura a vaga por 60 minutos.
+- Quando todos os lotes acabam, a página mostra "Vagas esgotadas".
+
+**Configurar um evento**
+1. No painel, vá em **Eventos**, escolha o evento e clique em **Criar página** (ou **Configurar**).
+2. Marque **Inscrições abertas** e confira o endereço.
+3. Escreva o texto de apresentação.
+4. Cadastre os lotes (nome, preço, vagas, data final) e as perguntas extras.
+5. Opcional: escreva uma mensagem de confirmação e coloque o link do grupo de WhatsApp.
+6. Clique em **Salvar**. Use **Copiar link** para colocar na bio do Instagram ou mandar no WhatsApp.
+- O painel precisa estar conectado em **Conta & sincronização** para a página receber as configurações.
+
+### Passo extra — credencial do Mercado Pago (uma vez só)
+1. Entre na conta Mercado Pago da RARA e acesse https://www.mercadopago.com.br/developers/panel/app
+2. Clique em **Criar aplicação**:
+   - **Nome:** `RARA Hub`
+   - **Tipo de solução:** Pagamentos online
+   - **Produto:** Checkout Pro
+   - Clique em **Criar aplicação**.
+3. Na aplicação, abra **Credenciais de produção**.
+   - Se o Mercado Pago pedir, preencha os dados do negócio e ative as credenciais.
+4. Copie o **Access Token**, que começa com `APP_USR-`. **Não compartilhe com ninguém.**
+5. Na Vercel, abra **Settings → Environment Variables** e crie `MP_ACCESS_TOKEN` com esse valor (tipo Secret, ambiente Production).
+6. Não precisa configurar webhooks no Mercado Pago: o site informa o endereço de aviso em cada pagamento.
+
+**Teste recomendado antes de divulgar:**
+- Crie um evento de teste com um lote de R$ 1,00 e faça uma inscrição pagando por Pix.
+- Confira se ela vira **Pago** e entra no Financeiro.
+- Depois, exclua o teste no painel.
+
+**Arquivos novos desta parte:** `inscricao.html` e, dentro de `api/`, os arquivos `_public.js`, `public-event.js`, `public-register.js`, `public-status.js` e `mp-webhook.js`. O `vercel.json` também mudou.
