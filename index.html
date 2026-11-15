@@ -23,6 +23,8 @@
 @media(max-width:650px){.q-card .qline,.q-card .qline2{grid-template-columns:1fr}}
 @media(max-width:650px){.lot-row,.q-row{grid-template-columns:1fr 1fr}}
 .reg-filters{background:#fffdfa;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.reg-filters label{display:flex;align-items:center;gap:6px}
+.fc-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start}.fc-results{position:sticky;top:18px}.fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}.fc-hint{font-size:10px;color:#9aa4a4;margin-top:-6px}.fc-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.fc-kpi{background:#fbf8f3;border:1px solid var(--line);border-radius:12px;padding:12px 13px}.fc-kpi b{display:block;font:500 22px Fraunces,serif;margin-top:4px}.fc-kpi small{color:#8b9697;font-size:10px}.fc-result{border-radius:14px;padding:16px 18px;margin:6px 0 12px}.fc-result.pos{background:#edf5e9}.fc-result.neg{background:#fbefed}.fc-result b{font:500 32px Fraunces,serif;display:block}.fc-insight{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid #f0ede8;font-size:12.5px;line-height:1.5}.fc-insight:last-child{border:0}.fc-insight .ic{font-size:16px;flex:0 0 22px}.fc-cost-row{display:grid;grid-template-columns:1fr 130px 28px;gap:7px;margin-bottom:7px}.fc-cost-row input{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.fc-bar{height:8px;background:#edf0eb;border-radius:20px;overflow:hidden;margin:6px 0 2px}.fc-bar span{display:block;height:100%;background:#a9c5b0}
+@media(max-width:950px){.fc-layout{grid-template-columns:1fr}.fc-results{position:static}}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -39,6 +41,7 @@
   <button data-page="finance"><span class="ico">◷</span>Financeiro</button>
   <button data-page="registrations"><span class="ico">▤</span>Inscrições</button>
   <button data-page="purchases"><span class="ico">▧</span>Compras</button>
+  <button data-page="forecast"><span class="ico">◇</span>Previsões</button>
   <button data-page="partners"><span class="ico">♡</span>Parceiros</button>
   <div class="nav-group">Eventos e conteúdo</div>
   <button data-page="events"><span class="ico">❋</span>Eventos</button>
@@ -130,6 +133,50 @@
  <div class="card"><div class="section-head"><h3>Lista de inscritas</h3><span class="muted" id="registrationCaption"></span></div>
   <div class="tablewrap"><table class="data-table"><thead><tr><th>Inscrita</th><th>Evento</th><th>Lote</th><th>Data do pagamento</th><th>Status</th><th>Valor pago</th><th></th></tr></thead><tbody id="registrationsBody"></tbody></table></div>
  </div>
+</section>
+
+<section class="page" id="forecast">
+ <div class="card registration-intro" style="margin-bottom:16px">
+  <div class="eyebrow">RARA / Planejamento</div>
+  <h2 style="font:500 28px Fraunces;margin:6px 0">Previsões</h2>
+  <p class="muted" style="margin:0">Simule o evento antes de ele acontecer: inscrições, custos, descontos, cortesias e patrocínios. Os números se atualizam na hora — e o site já usa o que foi realizado até agora.</p>
+ </div>
+ <div class="toolbar"><select id="fcEvent" onchange="loadForecast()" style="max-width:260px"></select><button class="btn" onclick="saveForecast()">Salvar previsão</button><button class="btn soft" onclick="resetForecast()">Preencher com dados reais</button><span class="muted" id="fcSaved" style="font-size:11px"></span></div>
+ <div class="fc-layout">
+  <div class="grid">
+   <div class="card"><div class="section-head"><h3>Já realizado</h3><span class="muted" style="font-size:11px">dados do site</span></div><div id="fcActual"></div></div>
+   <div class="card"><div class="section-head"><h3>Inscrições</h3></div>
+    <div class="fc-grid">
+     <div class="field"><label>Inscrições previstas (total de vagas)</label><input type="number" min="0" step="1" data-fc="expected"></div>
+     <div class="field"><label>Valor médio do ingresso (R$)</label><input type="number" min="0" step="0.01" data-fc="price"></div>
+     <div class="field"><label>Taxa média do Mercado Pago (%)</label><input type="number" min="0" max="30" step="0.01" data-fc="feePct"><div class="fc-hint">Pix ≈ 1% · cartão ≈ 5%</div></div>
+     <div class="field"><label>Custo por participante (R$)</label><input type="number" min="0" step="0.01" data-fc="varCost"><div class="fc-hint">kit, comida, brindes por pessoa</div></div>
+    </div>
+   </div>
+   <div class="card"><div class="section-head"><h3>Descontos e cortesias</h3></div>
+    <div class="fc-grid">
+     <div class="field"><label>Inscrições com cupom (%)</label><input type="number" min="0" max="100" step="1" data-fc="couponShare"></div>
+     <div class="field"><label>Desconto médio do cupom (%)</label><input type="number" min="0" max="100" step="1" data-fc="couponPct"></div>
+     <div class="field"><label>Cortesias (vagas gratuitas)</label><input type="number" min="0" step="1" data-fc="courtesies"><div class="fc-hint">influenciadoras, parceiras, convidadas</div></div>
+    </div>
+   </div>
+   <div class="card"><div class="section-head"><h3>Custos previstos</h3><button class="small-link" onclick="addFcCost()">＋ adicionar custo</button></div>
+    <label class="checkline" style="border:0;padding-top:0"><input type="checkbox" data-fc="includeSpent"> <span>Incluir gastos já lançados para este evento (<b id="fcSpentLabel">R$ 0,00</b>)</span></label>
+    <div id="fcCosts"></div>
+    <div class="muted" style="font-size:11px">Ex.: aluguel do espaço, fotografia, decoração, alimentação, material gráfico — o que ainda vai ser pago.</div>
+   </div>
+   <div class="card"><div class="section-head"><h3>Patrocínios e meta</h3></div>
+    <div class="fc-grid">
+     <div class="field"><label>Patrocínios já garantidos (R$)</label><input type="number" min="0" step="0.01" data-fc="sponsorsConfirmed"><div class="fc-hint" id="fcPartnersHint"></div></div>
+     <div class="field"><label>Valor de cada cota de patrocínio (R$)</label><input type="number" min="0" step="0.01" data-fc="sponsorQuota"></div>
+     <div class="field"><label>Cotas que vocês planejam vender</label><input type="number" min="0" step="1" data-fc="sponsorsPlanned"></div>
+     <div class="field"><label>Meta de lucro (R$)</label><input type="number" min="0" step="0.01" data-fc="goal"></div>
+    </div>
+   </div>
+  </div>
+  <div class="card fc-results" id="fcResults"></div>
+ </div>
+ <div class="card" style="margin-top:16px"><div class="section-head"><h3>Cenários</h3><span class="muted">variando só o número de inscrições</span></div><div class="tablewrap"><table class="data-table"><thead><tr><th>Cenário</th><th>Inscrições</th><th>Pagantes</th><th>Receita líquida</th><th>Custos</th><th>Resultado</th><th>Patrocínios p/ meta</th></tr></thead><tbody id="fcScenarios"></tbody></table></div></div>
 </section>
 
 <section class="page" id="purchases">
@@ -237,7 +284,7 @@ const initial={transactions:[],registrations:[],purchases:[],ideas:[],partners:[
 const HAD_LOCAL_DATA=(()=>{try{return localStorage.getItem(KEY)!==null}catch{return true}})();
 let data=load(), selectedEvent=null, activeEventPage=null, activePage='dashboard', modalType=null;
 if(!data || typeof data!=='object' || Array.isArray(data)) data=structuredClone(initial);
-for(const key of ['transactions','registrations','ideas','partners','events','posts','links']) if(!Array.isArray(data[key])) data[key]=[];
+for(const key of ['transactions','registrations','ideas','partners','events','posts','links','forecasts']) if(!Array.isArray(data[key])) data[key]=[];
 if(!Array.isArray(data.checklists)) data.checklists=[];
 if(!data.checklists.length) data.checklists=[{id:"general-board",name:"Post-its",tasks:[]}];
 data.checklists=data.checklists.map((board,index)=>({
@@ -278,12 +325,12 @@ function money(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',c
 function dateBR(d){if(!d)return '—';return new Date(d+'T12:00:00').toLocaleDateString('pt-BR')}
 function daysTo(d){return Math.ceil((new Date(d+'T00:00:00')-new Date(new Date().toDateString()))/86400000)}
 function go(p, updateHash=true){
- const allowed=['dashboard','finance','registrations','purchases','ideas','events','instagram','links','checklist','partners'];
+ const allowed=['dashboard','finance','registrations','purchases','forecast','ideas','events','instagram','links','checklist','partners'];
  if(!allowed.includes(p)) p='dashboard';
  activePage=p;
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
- document.getElementById('pageTitle').textContent={dashboard:'Dashboard',finance:'Financeiro',registrations:'Inscrições',purchases:'Compras e investimentos',ideas:'Ideias',events:'Eventos',instagram:'Instagram',links:'Links',checklist:'Checklist',partners:'Parceiros'}[p];
+ document.getElementById('pageTitle').textContent={dashboard:'Dashboard',finance:'Financeiro',registrations:'Inscrições',purchases:'Compras e investimentos',forecast:'Previsões',ideas:'Ideias',events:'Eventos',instagram:'Instagram',links:'Links',checklist:'Checklist',partners:'Parceiros'}[p];
  if(updateHash && location.hash!=='#'+p) history.replaceState(null,'','#'+p);
  renderAll();
  window.scrollTo({top:0,behavior:'smooth'});
@@ -821,8 +868,8 @@ function importHistoricalRaraPurchases(){
 }
 
 function renderAll(){
- data.transactions ||= [];data.registrations ||= [];data.purchases ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.partners ||= [];data.checklists ||= [];
- renderDashboard();renderFinance();renderRegistrations();renderPurchases();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();renderPartners();
+ data.transactions ||= [];data.registrations ||= [];data.purchases ||= [];data.ideas ||= [];data.events ||= [];data.posts ||= [];data.links ||= [];data.partners ||= [];data.checklists ||= [];data.forecasts ||= [];
+ renderDashboard();renderFinance();renderRegistrations();renderPurchases();renderIdeas();renderEvents();renderInstagram();renderLinks();renderChecklist();renderPartners();refreshForecastMeta();
 }
 function exportCSV(){let rows=[['Tipo','Data','Descrição','Categoria','Evento','Status','Valor'],...data.transactions.map(x=>[x.type,x.date,x.description,x.category,x.event,x.status,x.amount])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='rara-financeiro.csv';a.click();URL.revokeObjectURL(a.href)}
 document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
@@ -832,7 +879,7 @@ document.getElementById('todayLabel').textContent=new Date().toLocaleDateString(
 // 2. Antes de juntar dados de outro aparelho, é feita uma cópia de segurança automática.
 // 3. Exclusões no site não apagam linhas do Notion: marcam a coluna "Excluído".
 // 4. Em caso de conflito, a versão local é guardada em "rara_conflicts" antes de ser substituída.
-const SYNC_COLLECTIONS=['transactions','registrations','purchases','ideas','events','posts','links','checklists','partners'];
+const SYNC_COLLECTIONS=['transactions','registrations','purchases','ideas','events','posts','links','checklists','partners','forecasts'];
 const SYNC_ASC=['events','checklists'];
 const SYNC_STATE_KEY='rara_notion_state';
 const SYNC={email:null,account:null,busy:false,pending:false,timer:null,remoteKeys:null,lastOk:null,error:null,cfg:null,gisReady:false,progress:null};
@@ -867,6 +914,7 @@ function syncSummaryBase(c,x){
   case 'posts':return {title:x.title,date:x.date,status:x.status,category:x.format,detail:x.pillar};
   case 'links':return {title:x.title,category:x.category,detail:x.url};
   case 'checklists':return {title:x.name,detail:(x.tasks||[]).filter(k=>!k.done).length+' pendentes de '+(x.tasks||[]).length};
+  case 'forecasts':return {title:'Previsão · '+(x.eventName||''),amount:x.result,status:x.result>=0?'Lucro previsto':'Prejuízo previsto',event:x.eventName,detail:`${x.expected||0} inscrições · meta ${money(x.goal||0)}`,date:String(x.updated||'').slice(0,10)};
   case 'partners':return {title:x.brand,amount:x.amount||null,status:x.status,category:x.relationship,detail:x.contact};
  }
  return {};
@@ -1253,6 +1301,133 @@ function readQuestionRows(){
   return q;
  }).filter(q=>q.label);
 }
+
+// ================= Previsões =================
+var FC_FIELDS=['expected','price','feePct','varCost','couponShare','couponPct','courtesies','sponsorsConfirmed','sponsorQuota','sponsorsPlanned','goal'];
+var FC_EVENT=null,FC_READY=false,FC_DIRTY=false,FC_STAMP='';
+function fcEventActual(ev){
+ const regs=(data.registrations||[]).filter(r=>r.eventId===ev.id);
+ const paid=regs.filter(r=>r.paymentStatus==='Pago');
+ const nameKey=String(ev.name||'').trim().toLocaleLowerCase('pt-BR');
+ const spent=(data.transactions||[]).filter(t=>t.type==='expense'&&String(t.event||'').trim().toLocaleLowerCase('pt-BR')===nameKey).reduce((a,t)=>a+Number(t.amount||0),0);
+ const income=(data.transactions||[]).filter(t=>t.type==='income'&&t.category==='Inscrição'&&String(t.event||'').trim().toLocaleLowerCase('pt-BR')===nameKey).reduce((a,t)=>a+Number(t.amount||0),0);
+ const paidAmounts=paid.map(r=>Number(r.amount||0)).filter(v=>v>0);
+ const lots=(ev.form&&ev.form.lots)||[];
+ const capacity=lots.reduce((a,l)=>a+(Number(l.limit)||0),0);
+ const avgPrice=paidAmounts.length?paidAmounts.reduce((a,b)=>a+b,0)/paidAmounts.length:(lots[0]?Number(lots[0].price):0);
+ const coupons=paid.filter(r=>r.couponCode).length,courtesies=paid.filter(r=>Number(r.amount||0)===0).length;
+ const partners=(data.partners||[]).filter(p=>['Confirmado','Concluído'].includes(p.status)&&Number(p.amount)>0).reduce((a,p)=>a+Number(p.amount),0);
+ return {regs:regs.length,paid:paid.length,pending:regs.length-paid.length,paidValue:paidAmounts.reduce((a,b)=>a+b,0),income,spent,capacity,avgPrice,coupons,courtesies,partners};
+}
+function fcDefaults(ev){
+ const a=fcEventActual(ev);
+ return {expected:a.capacity||Math.max(a.paid,30),price:Math.round((a.avgPrice||100)*100)/100,feePct:3,varCost:0,couponShare:a.paid?Math.round(100*a.coupons/a.paid):0,couponPct:10,courtesies:a.courtesies,sponsorsConfirmed:0,sponsorQuota:500,sponsorsPlanned:0,goal:1000,includeSpent:true,costs:[]};
+}
+function fcCurrent(){
+ const v={};FC_FIELDS.forEach(k=>{const el=document.querySelector(`[data-fc="${k}"]`);v[k]=Math.max(0,parseFloat(String(el?.value||'').replace(',','.'))||0)});
+ v.includeSpent=!!document.querySelector('[data-fc="includeSpent"]')?.checked;
+ v.costs=[...document.querySelectorAll('#fcCosts .fc-cost-row')].map(r=>({name:r.querySelector('[data-k=name]').value.trim(),value:Math.max(0,parseFloat(String(r.querySelector('[data-k=value]').value).replace(',','.'))||0)})).filter(c=>c.name||c.value);
+ return v;
+}
+function addFcCost(c={}){
+ const d=document.createElement('div');d.className='fc-cost-row';
+ d.innerHTML=`<input data-k="name" placeholder="Item (ex.: fotografia)" value="${esc(c.name||'')}"><input data-k="value" type="number" min="0" step="0.01" placeholder="R$" value="${c.value??''}"><button type="button" class="rm" onclick="this.parentElement.remove();FC_DIRTY=true;computeForecast()">×</button>`;
+ document.getElementById('fcCosts').appendChild(d);
+}
+// Modelo: N vagas, C cortesias, pagantes = N - C. Cada pagante rende preço × (1 − parcela com cupom × desconto) × (1 − taxa).
+function fcModel(v,spent,N=v.expected){
+ const C=Math.min(v.courtesies,N),pay=Math.max(0,N-C);
+ const ticket=v.price*(1-(v.couponShare/100)*(v.couponPct/100));
+ const gross=pay*ticket,fees=gross*v.feePct/100,net=gross-fees;
+ const fixed=v.costs.reduce((a,c)=>a+c.value,0)+(v.includeSpent?spent:0);
+ const variable=v.varCost*N,costs=fixed+variable;
+ const sponsors=v.sponsorsConfirmed+v.sponsorQuota*v.sponsorsPlanned;
+ const result=net+sponsors-costs;
+ const unit=ticket*(1-v.feePct/100); // líquido por pagante
+ return {N,C,pay,ticket,gross,fees,net,fixed,variable,costs,sponsors,result,unit,margin:(net+sponsors)>0?result/(net+sponsors):0};
+}
+function computeForecast(){
+ const box=document.getElementById('fcResults');if(!box)return;
+ const ev=data.events.find(e=>e.id===FC_EVENT);
+ if(!ev){box.innerHTML='<div class="empty">Cadastre um evento para fazer previsões.</div>';return}
+ const a=fcEventActual(ev),v=fcCurrent(),m=fcModel(v,a.spent);
+ const pos=m.result>=0;
+ // ponto de equilíbrio (inscrições pagantes) mantendo as cortesias
+ const perHead=m.unit-v.varCost;
+ const beN=perHead>0?Math.ceil((m.fixed-m.sponsors+m.C*v.varCost)/perHead):null; // pagantes necessários
+ const goalN=perHead>0?Math.ceil((m.fixed-m.sponsors+m.C*v.varCost+v.goal)/perHead):null;
+ // cortesias possíveis com N fixo
+ const freeAt=target=>{const base=fcModel({...v,courtesies:0},a.spent);if(m.unit<=0)return 0;return Math.max(0,Math.min(m.N,Math.floor((base.result-target)/m.unit)))};
+ const cortZero=freeAt(0),cortGoal=freeAt(v.goal);
+ // desconto médio máximo se TODAS as pagantes usassem cupom
+ const maxDisc=target=>{if(!m.pay||!v.price)return 0;const need=(target+m.costs-m.sponsors)/(m.pay*(1-v.feePct/100));return Math.max(0,Math.min(100,100*(1-need/v.price)))};
+ const dZero=maxDisc(0),dGoal=maxDisc(v.goal);
+ // patrocínios para a meta
+ const gap=v.goal-m.result,quotasNeeded=gap>0&&v.sponsorQuota>0?Math.ceil(gap/v.sponsorQuota):0;
+ const pct=x=>`${x.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`;
+ const ins=(ic,html)=>`<div class="fc-insight"><span class="ic">${ic}</span><div>${html}</div></div>`;
+ box.innerHTML=`<div class="eyebrow">${esc(ev.name)}</div><h3 style="font:500 22px Fraunces;margin:4px 0 8px">Resultado previsto</h3>
+ <div class="fc-result ${pos?'pos':'neg'}"><small class="muted">${pos?'Lucro':'Prejuízo'} previsto</small><b class="${pos?'amount-in':'amount-out'}">${money(m.result)}</b><small class="muted">Margem ${pct(m.margin*100)} · meta ${money(v.goal)} ${m.result>=v.goal?'✓ atingida':'— faltam '+money(v.goal-m.result)}</small></div>
+ <div class="fc-kpis">
+  <div class="fc-kpi"><small>Receita das inscrições (líquida)</small><b>${money(m.net)}</b><small>${m.pay} pagantes · ingresso médio ${money(m.ticket)} · taxas ${money(m.fees)}</small></div>
+  <div class="fc-kpi"><small>Patrocínios</small><b>${money(m.sponsors)}</b><small>garantidos ${money(v.sponsorsConfirmed)} + ${v.sponsorsPlanned} cota(s)</small></div>
+  <div class="fc-kpi"><small>Custos totais</small><b class="amount-out">${money(m.costs)}</b><small>fixos ${money(m.fixed)} · por pessoa ${money(m.variable)}</small></div>
+  <div class="fc-kpi"><small>Vagas</small><b>${m.N}</b><small>${m.pay} pagantes · ${m.C} cortesia(s)</small></div>
+ </div>
+ ${ins('⚖️',beN==null?'Com esse preço e custo por pessoa, cada inscrição não cobre o próprio custo — revise o valor do ingresso ou o custo por participante.':`<b>Ponto de equilíbrio:</b> ${Math.max(0,beN)} inscrições pagantes (sem lucro nem prejuízo). Para a meta de ${money(v.goal)}: <b>${Math.max(0,goalN)}</b> pagantes.`)}
+ ${ins('🎁',`<b>Cortesias possíveis</b> com ${m.N} vagas: até <b>${cortZero}</b> sem ter prejuízo, ou <b>${cortGoal}</b> mantendo a meta de lucro. Planejadas: ${m.C}.`)}
+ ${ins('🏷️',`<b>Desconto máximo</b> (se todas as pagantes usassem cupom): até <b>${pct(dZero)}</b> sem prejuízo, ou <b>${pct(dGoal)}</b> mantendo a meta. Hoje o desconto médio é ${pct((v.couponShare/100)*v.couponPct)} por inscrição.`)}
+ ${ins('🤝',gap>0?(v.sponsorQuota>0?`<b>Patrocínios:</b> faltam <b>${quotasNeeded} cota(s)</b> de ${money(v.sponsorQuota)} (${money(gap)}) para bater a meta de lucro.`:`Faltam ${money(gap)} para a meta — defina o valor de cada cota para calcular quantos patrocínios buscar.`):`<b>Patrocínios:</b> a meta já é atingida com o que está previsto${m.result-v.goal>0?` — sobram ${money(m.result-v.goal)} acima da meta`:''}.`)}
+ ${ins('📍',`<b>Até agora:</b> ${a.paid} inscrições pagas de ${m.N} previstas (${m.N?Math.round(100*a.paid/m.N):0}%), ${money(a.income||a.paidValue)} recebidos e ${money(a.spent)} gastos lançados.`)}`;
+ document.getElementById('fcScenarios').innerHTML=[['Pessimista',.6],['Cauteloso',.8],['Previsto',1],['Otimista',1.2]].map(([name,f])=>{const n=Math.round(v.expected*f),s=fcModel(v,a.spent,n),g=v.goal-s.result,q=g>0&&v.sponsorQuota>0?Math.ceil(g/v.sponsorQuota):0;return `<tr${f===1?' style="background:#f6faf7"':''}><td><b>${name}</b> <span class="muted">(${Math.round(f*100)}%)</span></td><td>${n}</td><td>${s.pay}</td><td>${money(s.net)}</td><td>${money(s.costs)}</td><td class="${s.result>=0?'amount-in':'amount-out'}">${money(s.result)}</td><td>${g>0?(q?q+' cota(s)':money(g)):'—'}</td></tr>`}).join('');
+ return m;
+}
+function fcFill(v){
+ FC_FIELDS.forEach(k=>{const el=document.querySelector(`[data-fc="${k}"]`);if(el)el.value=v[k]??''});
+ const inc=document.querySelector('[data-fc="includeSpent"]');if(inc)inc.checked=v.includeSpent!==false;
+ document.getElementById('fcCosts').innerHTML='';(v.costs&&v.costs.length?v.costs:[{}]).forEach(addFcCost);
+}
+function loadForecast(){
+ FC_EVENT=document.getElementById('fcEvent').value||null;
+ const ev=data.events.find(e=>e.id===FC_EVENT);if(!ev){computeForecast();return}
+ const saved=(data.forecasts||[]).find(f=>f.eventId===ev.id);
+ fcFill(saved?{...fcDefaults(ev),...saved}:fcDefaults(ev));
+ FC_DIRTY=false;FC_STAMP=saved?String(saved.updated||''):'';
+ document.getElementById('fcSaved').textContent=saved?`Previsão salva por ${saved.updatedBy||saved.createdBy||'—'} em ${fmtWhen(saved.updatedAt||saved.createdAt||saved.updated)}`:'Ainda não salva — valores sugeridos a partir dos dados do site.';
+ refreshForecastMeta(true);
+}
+function resetForecast(){const ev=data.events.find(e=>e.id===FC_EVENT);if(!ev)return;if(!confirm('Substituir os valores da tela pelos sugeridos a partir dos dados reais?'))return;fcFill(fcDefaults(ev));computeForecast()}
+function saveForecast(){
+ const ev=data.events.find(e=>e.id===FC_EVENT);if(!ev){alert('Escolha um evento.');return}
+ const v=fcCurrent(),m=fcModel(v,fcEventActual(ev).spent);
+ data.forecasts ||= [];
+ let f=data.forecasts.find(x=>x.eventId===ev.id);
+ if(!f){f={id:'fc-'+ev.id,eventId:ev.id};data.forecasts.unshift(f)}
+ Object.assign(f,v,{eventName:ev.name,result:Math.round(m.result*100)/100,updated:new Date().toISOString()});
+ FC_DIRTY=false;FC_STAMP=f.updated;
+ persist();
+ document.getElementById('fcSaved').textContent='Previsão salva ✓';
+}
+// Atualiza a lista de eventos e os números reais sem mexer no que está sendo digitado.
+function refreshForecastMeta(skipLoad){
+ if(!FC_READY)return;
+ const sel=document.getElementById('fcEvent');if(!sel)return;
+ const prev=FC_EVENT||sel.value;
+ sel.innerHTML=(data.events||[]).map(e=>`<option value="${esc(e.id)}">${esc(e.name)}${e.date?' · '+dateBR(e.date):''}</option>`).join('');
+ if((data.events||[]).some(e=>e.id===prev))sel.value=prev;
+ if(!skipLoad&&sel.value!==FC_EVENT){loadForecast();return}
+ const savedNow=(data.forecasts||[]).find(f=>f.eventId===sel.value);
+ if(!skipLoad&&!FC_DIRTY&&savedNow&&String(savedNow.updated||'')!==FC_STAMP){loadForecast();return} // chegou versão nova de outro aparelho
+ const ev=data.events.find(e=>e.id===FC_EVENT);if(!ev)return computeForecast();
+ const a=fcEventActual(ev);
+ document.getElementById('fcSpentLabel').textContent=money(a.spent);
+ document.getElementById('fcPartnersHint').textContent=a.partners?`Parceiros confirmados com valor: ${money(a.partners)}`:'';
+ document.getElementById('fcActual').innerHTML=`<div class="fc-kpis" style="margin:0"><div class="fc-kpi"><small>Inscrições pagas</small><b>${a.paid}</b><small>${a.pending} pendente(s)${a.capacity?' · '+a.capacity+' vagas nos lotes':''}</small></div><div class="fc-kpi"><small>Recebido em inscrições</small><b class="amount-in">${money(a.income||a.paidValue)}</b><small>ingresso médio ${money(a.avgPrice)}</small></div><div class="fc-kpi"><small>Gastos lançados no evento</small><b class="amount-out">${money(a.spent)}</b><small>Financeiro · evento “${esc(ev.name)}”</small></div><div class="fc-kpi"><small>Cupons e cortesias</small><b>${a.coupons} · ${a.courtesies}</b><small>entre as pagas</small></div></div>`;
+ computeForecast();
+}
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#forecast')&&!e.target.matches('#fcEvent')){FC_DIRTY=true;computeForecast()}});
+document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-fc="includeSpent"]')){FC_DIRTY=true;computeForecast()}});
+FC_READY=true;refreshForecastMeta();
 
 // ================= Quem está usando (Denise / Maria Eduarda) =================
 const USER_KEY='rara_user_name';

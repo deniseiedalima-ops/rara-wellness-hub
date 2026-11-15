@@ -210,3 +210,25 @@ Na aba Inscrições aparecem o cupom usado e o valor original.
 - Depois, exclua o teste no painel.
 
 **Arquivos novos desta parte:** `inscricao.html` e, dentro de `api/`, os arquivos `_public.js`, `public-event.js`, `public-register.js`, `public-coupon.js`, `public-status.js` e `mp-webhook.js`. O `vercel.json` também mudou.
+
+---
+
+## Aba Previsões (planejamento do evento)
+
+Fica no menu, em **Gestão → Previsões**. Escolha o evento e ajuste:
+- **Inscrições:** vagas previstas, valor médio do ingresso, taxa média do Mercado Pago (Pix ≈ 1%, cartão ≈ 5%) e custo por participante (kit, comida, brindes).
+- **Descontos e cortesias:** quantas inscrições devem usar cupom, o desconto médio e quantas vagas gratuitas serão dadas.
+- **Custos previstos:** itens que ainda vão ser pagos. Há também a opção de somar os gastos já lançados no Financeiro para aquele evento.
+- **Patrocínios e meta:** valor já garantido, valor de cada cota, cotas que vocês pretendem vender e meta de lucro.
+
+O site calcula na hora:
+- **Resultado previsto:** lucro ou prejuízo, com a margem e quanto falta para a meta.
+- **Ponto de equilíbrio:** quantas inscrições pagantes são necessárias para não ter prejuízo e para bater a meta.
+- **Cortesias possíveis:** quantas vagas gratuitas dá para oferecer sem prejuízo e mantendo a meta.
+- **Desconto máximo:** até quantos % de desconto dá para dar sem prejuízo e mantendo a meta.
+- **Patrocínios:** quantas cotas faltam vender para chegar à meta.
+- **Cenários:** pessimista (60%), cauteloso (80%), previsto (100%) e otimista (120%) das inscrições.
+
+O bloco **Já realizado** usa os dados reais do site: inscrições pagas, valor recebido, gastos lançados no evento, cupons e cortesias. **Preencher com dados reais** sugere os valores a partir deles.
+
+**Salvar previsão** guarda o cenário. Ele fica sincronizado com o Notion, na aba 📈 Previsões, e aparece também para a Maria Eduarda.

@@ -15,7 +15,8 @@ const TYPE_LABEL = {
   posts: 'Instagram',
   links: 'Links',
   checklists: 'Checklist',
-  partners: 'Parceiros'
+  partners: 'Parceiros',
+  forecasts: 'Previsões'
 };
 const COLLECTIONS = Object.keys(TYPE_LABEL);
 
