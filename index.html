@@ -34,6 +34,9 @@
 .fc-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start}.fc-results{position:sticky;top:18px}.fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}.fc-hint{font-size:10px;color:#9aa4a4;margin-top:-6px}.fc-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.fc-kpi{background:#fbf8f3;border:1px solid var(--line);border-radius:12px;padding:12px 13px}.fc-kpi b{display:block;font:500 22px Fraunces,serif;margin-top:4px}.fc-kpi small{color:#8b9697;font-size:10px}.fc-result{border-radius:14px;padding:16px 18px;margin:6px 0 12px}.fc-result.pos{background:#edf5e9}.fc-result.neg{background:#fbefed}.fc-result b{font:500 32px Fraunces,serif;display:block}.fc-insight{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid #f0ede8;font-size:12.5px;line-height:1.5}.fc-insight:last-child{border:0}.fc-insight .ic{font-size:16px;flex:0 0 22px}.fc-cost-row{display:grid;grid-template-columns:1fr 130px 28px;gap:7px;margin-bottom:7px}.fc-cost-row input{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.fc-bar{height:8px;background:#edf0eb;border-radius:20px;overflow:hidden;margin:6px 0 2px}.fc-bar span{display:block;height:100%;background:#a9c5b0}
 @media(max-width:950px){.fc-layout{grid-template-columns:1fr}.fc-results{position:static}}
 .pfilters{margin:0 0 16px}.pfilter{border:1px solid var(--line);background:#fffdfa;color:#66767b;border-radius:30px;padding:8px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:7px}.pfilter b{font-weight:600;background:#f1eee8;border-radius:20px;padding:1px 8px;font-size:11px;color:#55686e}.pfilter:hover{background:var(--blue2)}.pfilter.active{background:var(--ink);border-color:var(--ink);color:#fff}.pfilter.active b{background:#ffffff26;color:#fff}.pfilter .sd{width:8px;height:8px;border-radius:50%}.pfilter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.pfilter-row .lbl{font-size:11px;color:#9aa4a4;min-width:96px}
+.ptabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px}.ptab{border:0;background:transparent;padding:10px 14px;font-size:13.5px;color:#7c8b8f;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}.ptab.active{color:var(--ink);border-color:var(--ink);font-weight:600}
+.msg-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start}.msg-models{display:grid;gap:9px}.msg-model{text-transform:none!important;letter-spacing:0!important;font-weight:400;display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 13px;cursor:pointer;background:#fffdfa}.msg-model input{width:auto;margin-top:3px;accent-color:#8eabb6}.msg-model.active{border-color:#a9c9d4;background:#f2f8f9}.msg-model b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px}.msg-model small{color:#8b9697;font-size:11.5px}.msg-preview{width:100%;min-height:420px;border:1px solid var(--line);border-radius:14px;padding:16px;font:14px/1.6 'DM Sans',sans-serif;color:var(--ink);background:#fff;resize:vertical;white-space:pre-wrap}.msg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.seg-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 2px}.seg-chip{border:1px solid var(--line);background:#fffdfa;color:#66767b;border-radius:30px;padding:6px 11px;font-size:12px;cursor:pointer}.seg-chip.active{background:var(--ink);border-color:var(--ink);color:#fff}
+@media(max-width:900px){.msg-layout{grid-template-columns:1fr}}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -255,6 +258,8 @@
  <div class="grid idea-grid" id="linksGrid"></div>
 </section>
 <section class="page" id="partners">
+ <div class="ptabs"><button type="button" class="ptab active" data-ptab="brands" onclick="setPartnerTab('brands')">Marcas</button><button type="button" class="ptab" data-ptab="message" onclick="setPartnerTab('message')">Mensagem para enviar à marca</button></div>
+ <div id="ptab-brands">
  <div class="toolbar">
   <button class="btn" onclick="openModal('partner')">＋ Adicionar marca</button>
   <input id="partnerSearch" type="search" placeholder="Buscar marca..." oninput="renderPartners()" aria-label="Buscar parceiros">
@@ -268,6 +273,29 @@
  <div class="notice">Cadastre marcas que apoiam a RARA, patrocinadores, permutas, fornecedores parceiros e investimentos. Os registros ficam organizados neste workspace.</div>
  <div class="pfilters" id="partnerFilters"></div>
  <div class="grid idea-grid" id="partnersGrid"></div>
+ </div>
+ <div id="ptab-message" class="hidden">
+  <div class="msg-layout">
+   <div class="card">
+    <h3 style="font:500 22px Fraunces;margin:0 0 4px">Montar mensagem</h3>
+    <p class="muted" style="margin:0 0 6px;font-size:12px">Escolha a marca, o segmento e o modelo. O nome e o motivo entram sozinhos no texto — ajuste o que quiser antes de enviar.</p>
+    <div class="field"><label>Marca</label><select id="msgBrand" onchange="msgBrandChanged()"></select></div>
+    <div class="field hidden" id="msgBrandOtherWrap"><label>Nome da marca</label><input id="msgBrandOther" placeholder="Ex.: Ateliê Flor" oninput="buildBrandMessage()"></div>
+    <div class="field"><label>Segmento da marca</label><div class="seg-chips" id="msgSegs"></div></div>
+    <div class="field"><label>Por que a marca combina com a RARA</label><textarea id="msgReason" rows="4" oninput="buildBrandMessage()" placeholder="Complete a frase: Acreditamos que [marca] combina com a RARA porque…"></textarea><div class="muted" style="font-size:11px">Continua a frase “Acreditamos que [marca] combina com a RARA porque…”</div></div>
+    <div class="field"><label>Modelo</label><div class="msg-models">
+     <label class="msg-model active" data-model="1"><input type="radio" name="msgModel" value="1" checked onchange="buildBrandMessage()"><span><b>Modelo 1 · Convite e proposta</b><small>Apresenta a RARA e pergunta se querem receber a proposta completa.</small></span></label>
+     <label class="msg-model" data-model="2"><input type="radio" name="msgModel" value="2" onchange="buildBrandMessage()"><span><b>Modelo 2 · Responsável por parcerias</b><small>Cita banner e divulgação e pede o contato de quem cuida de parcerias e patrocínios.</small></span></label>
+    </div></div>
+   </div>
+   <div class="card">
+    <div class="section-head"><h3 style="font:500 22px Fraunces;margin:0">Mensagem pronta</h3><span class="muted" style="font-size:11px" id="msgCount"></span></div>
+    <textarea class="msg-preview" id="msgPreview" oninput="MSG_EDITED=true;msgCountUpdate()"></textarea>
+    <div class="muted" style="font-size:11px;margin-top:6px" id="msgEditedNote"></div>
+    <div class="msg-actions"><button class="btn" onclick="copyBrandMessage()">Copiar mensagem</button><a class="btn soft" id="msgWa" target="_blank" rel="noopener" style="text-decoration:none">Abrir no WhatsApp</a><a class="btn outline hidden" id="msgIg" target="_blank" rel="noopener" style="text-decoration:none">Abrir Instagram da marca</a><button class="btn outline hidden" id="msgMarkSent" onclick="markBrandContacted()">Marcar como “Em negociação”</button></div>
+   </div>
+  </div>
+ </div>
 </section>
 </main></div>
 
@@ -700,7 +728,7 @@ function renderPartners(){
    ${x.social?`<div class="muted" style="margin-top:5px;overflow-wrap:anywhere">${esc(x.social)}</div>`:''}
    ${x.notes?`<p class="muted" style="margin-top:10px">${esc(x.notes)}</p>`:''}
    ${whoLine(x)}
-   <div class="partner-actions"><button type="button" class="btn partner-edit-btn" onclick="editPartner('${x.id}')">✎ Editar</button><button type="button" class="small-link" onclick="removeItem('partners','${x.id}')">remover registro</button></div>
+   <div class="partner-actions"><button type="button" class="btn partner-edit-btn" onclick="editPartner('${x.id}')">✎ Editar</button><button type="button" class="btn soft" onclick="openBrandMessage('${x.id}')">✉ Mensagem</button><button type="button" class="small-link" onclick="removeItem('partners','${x.id}')">remover registro</button></div>
   </article>`;
  }).join('')||(all.length?`<div class="empty">Nenhuma marca ${PARTNER_STATUS==='all'&&PARTNER_REL==='all'?'encontrada na busca':'com esses filtros'}.</div>`:'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>');
 }
@@ -1454,6 +1482,117 @@ function refreshForecastMeta(skipLoad){
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#forecast')&&!e.target.matches('#fcEvent')){FC_DIRTY=true;computeForecast()}});
 document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-fc="includeSpent"]')){FC_DIRTY=true;computeForecast()}});
 FC_READY=true;refreshForecastMeta();
+
+// ================= Mensagem para enviar à marca =================
+const MSG_TEMPLATES={
+ 1:`Oiii! Tudo bem? 🤎
+Me chamo Denise e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto que nasceu recentemente em Imperatriz, com o propósito de proporcionar experiências que incentivem mulheres a desacelerar, cuidar de si, experimentar coisas novas e criar conexões.
+No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição, e pensamos que seria muito interessante ter vocês conosco como parceiros!
+Atualmente, já contamos com marcas como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras empresas que estão construindo essa experiência com a gente.
+Acreditamos que [NOME DA MARCA] combina com a RARA porque [MOTIVO].
+Preparamos uma proposta com diferentes possibilidades de parceria e gostaríamos muito de apresentar essa oportunidade à marca. Você teria interesse em conhecer um pouquinho mais sobre o projeto e receber nossa proposta completa? 🤎`,
+ 2:`Olá! Tudo bem? 🤎
+Me chamo Denise e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto criado recentemente em Imperatriz, com o propósito de proporcionar experiências voltadas ao bem-estar, autocuidado e conexão entre mulheres.
+No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição. Já contamos com parceiros como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras marcas que acreditam na nossa proposta.
+Acreditamos que [NOME DA MARCA] combina muito com a RARA porque [MOTIVO].
+Gostaríamos muito de apresentar a possibilidade de uma parceria com vocês! Temos uma proposta com diferentes formatos de participação e visibilidade para as marcas parceiras, incluindo presença no banner oficial e divulgação nas nossas redes sociais e durante o evento.
+Poderiam me informar quem é a pessoa responsável por parcerias e patrocínios para que eu possa apresentar nossa proposta completa? 🤎`
+};
+const MSG_SEGMENTS=[
+ ['Roupas','as peças de vocês traduzem estilo, conforto e autenticidade, e queremos que cada mulher se sinta bonita e confiante do jeito que ela é'],
+ ['Joias e acessórios','as peças de vocês carregam delicadeza e significado, e acreditamos que cuidar de si também passa pelos pequenos detalhes'],
+ ['Sapatos','acreditamos que se sentir bem começa pelos passos que damos, e o conforto e o estilo de vocês combinam com a leveza que queremos proporcionar'],
+ ['Moda praia','as peças de vocês valorizam a liberdade e a autoestima feminina, e isso conversa diretamente com o que queremos despertar nas participantes'],
+ ['Beleza e skincare','o autocuidado está no centro da RARA, e os produtos de vocês fazem parte dos rituais que ajudam as mulheres a se cuidarem com carinho'],
+ ['Alimentação e bebidas','acreditamos que se alimentar bem também é uma forma de cuidado, e os sabores de vocês combinam com os momentos de pausa e conexão que queremos criar'],
+ ['Saúde e bem-estar','o trabalho de vocês incentiva as mulheres a cuidarem do corpo e da mente, exatamente o que a RARA propõe'],
+ ['Esporte e movimento','o movimento é um dos pilares da RARA, e a marca de vocês incentiva mulheres a se movimentarem com conforto e prazer'],
+ ['Casa e decoração','acreditamos que criar ambientes acolhedores também é uma forma de bem-estar, e a estética de vocês conversa com a atmosfera do nosso encontro'],
+ ['Flores e presentes','as criações de vocês transmitem cuidado e afeto, e queremos que cada participante viva momentos especiais e cheios de significado'],
+ ['Outro','']
+];
+let MSG_SEG='',MSG_EDITED=false;
+function setPartnerTab(t){
+ document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('active',b.dataset.ptab===t));
+ document.getElementById('ptab-brands').classList.toggle('hidden',t!=='brands');
+ document.getElementById('ptab-message').classList.toggle('hidden',t!=='message');
+ if(t==='message')renderBrandMessageForm();
+}
+function renderBrandMessageForm(selectId){
+ const sel=document.getElementById('msgBrand');if(!sel)return;
+ const cur=selectId||sel.value;
+ const list=(data.partners||[]).slice().sort((a,b)=>String(a.brand).localeCompare(String(b.brand),'pt-BR'));
+ sel.innerHTML=`<option value="">— Escolha uma marca —</option>${list.map(p=>`<option value="${esc(p.id)}">${esc(p.brand)}${p.status?' · '+esc(p.status):''}</option>`).join('')}<option value="__other">Outra marca (digitar nome)</option>`;
+ if(cur&&[...sel.options].some(o=>o.value===cur))sel.value=cur;
+ document.getElementById('msgSegs').innerHTML=MSG_SEGMENTS.map(([n])=>`<button type="button" class="seg-chip ${MSG_SEG===n?'active':''}" onclick="setMsgSegment('${n}')">${n}</button>`).join('');
+ msgBrandChanged(true);
+}
+function msgBrandChanged(keepReason){
+ const id=document.getElementById('msgBrand').value;
+ document.getElementById('msgBrandOtherWrap').classList.toggle('hidden',id!=='__other');
+ const p=(data.partners||[]).find(x=>x.id===id);
+ if(p&&!keepReason&&p.messageReason)document.getElementById('msgReason').value=p.messageReason;
+ if(p&&!keepReason&&p.segment){MSG_SEG=p.segment;document.querySelectorAll('.seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===MSG_SEG))}
+ MSG_EDITED=false;buildBrandMessage();
+}
+function setMsgSegment(n){
+ MSG_SEG=n;document.querySelectorAll('.seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===n));
+ const seg=MSG_SEGMENTS.find(s=>s[0]===n);
+ const r=document.getElementById('msgReason');
+ if(seg&&seg[1]&&(!r.value.trim()||MSG_SEGMENTS.some(s=>s[1]===r.value.trim())))r.value=seg[1];
+ if(n==='Outro'&&MSG_SEGMENTS.some(s=>s[1]&&s[1]===r.value.trim()))r.value='';
+ MSG_EDITED=false;buildBrandMessage();
+}
+function msgBrandName(){
+ const id=document.getElementById('msgBrand').value;
+ if(id==='__other')return document.getElementById('msgBrandOther').value.trim();
+ return ((data.partners||[]).find(x=>x.id===id)||{}).brand||'';
+}
+function buildBrandMessage(){
+ const model=(document.querySelector('input[name="msgModel"]:checked')||{}).value||'1';
+ document.querySelectorAll('.msg-model').forEach(m=>m.classList.toggle('active',m.dataset.model===model));
+ const name=msgBrandName()||'[NOME DA MARCA]';
+ let reason=document.getElementById('msgReason').value.trim().replace(/[.!\s]+$/,'');
+ if(reason)reason=reason.charAt(0).toLocaleLowerCase('pt-BR')+reason.slice(1);
+ const text=MSG_TEMPLATES[model].replace('[NOME DA MARCA]',name).replace('[MOTIVO]',reason||'[MOTIVO PELO QUAL A MARCA SE CONECTA AO PROPÓSITO DO EVENTO E AO NOSSO PÚBLICO]');
+ const prev=document.getElementById('msgPreview');
+ prev.value=text;MSG_EDITED=false;
+ const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);
+ const phone=String(p?.contact||'').replace(/\D/g,'');
+ const waNum=phone.length>=10?(phone.length<=11?'55'+phone:phone):'';
+ document.getElementById('msgWa').href=`https://wa.me/${waNum}?text=${encodeURIComponent(text)}`;
+ const handle=(String(p?.social||'').match(/@([A-Za-z0-9._]{2,30})/)||String(p?.social||'').match(/instagram\.com\/([A-Za-z0-9._]{2,30})/)||[])[1];
+ const ig=document.getElementById('msgIg');ig.classList.toggle('hidden',!handle);if(handle)ig.href='https://instagram.com/'+handle;
+ document.getElementById('msgMarkSent').classList.toggle('hidden',!(p&&(p.status||'Entrar em contato')==='Entrar em contato'));
+ const missing=[!msgBrandName()&&'o nome da marca',!reason&&'o motivo'].filter(Boolean);
+ document.getElementById('msgEditedNote').textContent=missing.length?`Falta preencher ${missing.join(' e ')} — o trecho entre [colchetes] precisa ser trocado antes de enviar.`:'Você pode editar o texto acima antes de copiar. Mudar a marca, o segmento ou o modelo gera o texto de novo.';
+ msgCountUpdate();
+}
+function msgCountUpdate(){const t=document.getElementById('msgPreview').value;document.getElementById('msgCount').textContent=`${t.length} caracteres`;const wa=document.getElementById('msgWa');if(MSG_EDITED){const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);const phone=String(p?.contact||'').replace(/\D/g,'');const waNum=phone.length>=10?(phone.length<=11?'55'+phone:phone):'';wa.href=`https://wa.me/${waNum}?text=${encodeURIComponent(t)}`}}
+function copyBrandMessage(){
+ const t=document.getElementById('msgPreview').value;
+ if(/\[(NOME DA MARCA|MOTIVO)/.test(t)&&!confirm('A mensagem ainda tem trechos entre [colchetes]. Copiar mesmo assim?'))return;
+ const done=()=>{const b=event?.target;if(b){const old=b.textContent;b.textContent='Copiada ✓';setTimeout(()=>b.textContent=old,1600)}};
+ if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>{prompt('Copie a mensagem:',t)});
+ else{const ta=document.getElementById('msgPreview');ta.select();document.execCommand('copy');done()}
+ const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);
+ if(p){const r=document.getElementById('msgReason').value.trim();if(p.messageReason!==r||p.segment!==MSG_SEG){p.messageReason=r;p.segment=MSG_SEG;persist()}}
+}
+function markBrandContacted(){
+ const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);if(!p)return;
+ p.status='Em negociação';p.messageReason=document.getElementById('msgReason').value.trim();p.segment=MSG_SEG;
+ p.notes=[p.notes,`Mensagem de parceria enviada em ${new Date().toLocaleDateString('pt-BR')}.`].filter(Boolean).join('\n');
+ persist();renderBrandMessageForm(p.id);
+}
+function openBrandMessage(id){
+ const p=(data.partners||[]).find(x=>x.id===id);
+ MSG_SEG=p?.segment||'';
+ setPartnerTab('message');
+ renderBrandMessageForm(id);
+ document.getElementById('msgReason').value=p?.messageReason||((MSG_SEGMENTS.find(s=>s[0]===MSG_SEG)||[])[1]||'');
+ buildBrandMessage();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
 
 // ================= Quem está usando (Denise / Maria Eduarda) =================
 const USER_KEY='rara_user_name';
