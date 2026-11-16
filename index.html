@@ -403,7 +403,7 @@ if(type==='partner'||type==='partner-edit'){
  ${f('O que a marca oferece','contribution','textarea',item?.contribution||'')}
  ${f('Contato / responsável','contact','text',item?.contact||'')}
  ${f('Instagram ou site','social','text',item?.social||'')}
- ${f('Status','status','select','',`${statusOpt('Em negociação')}${statusOpt('Confirmado')}${statusOpt('Concluído')}${statusOpt('Não avançou')}`)}
+ ${f('Status','status','select','',`${statusOpt('Entrar em contato')}${statusOpt('Em negociação')}${statusOpt('Confirmado')}${statusOpt('Concluído')}${statusOpt('Não avançou')}`)}
  ${f('Observações','notes','textarea',item?.notes||'')}`;
  if(editing) window.editingPartnerId=item?.id||null;
 }
@@ -671,7 +671,7 @@ function editPartner(id){openModal('partner-edit',{id})}
 let PARTNER_STATUS='all',PARTNER_REL='all';
 const PARTNER_RELS=[['Parceria','Parceria'],['Investimento','Investimento / patrocínio'],['Permuta','Permuta'],['Apoio','Apoio'],['Fornecedor parceiro','Fornecedor parceiro']];
 function setPartnerRel(r){PARTNER_REL=r;renderPartners()}
-const PARTNER_STATUSES=[['Em negociação','#e2c38f'],['Confirmado','#9cc4a4'],['Concluído','#7fa7b5'],['Não avançou','#d3a3a1']];
+const PARTNER_STATUSES=[['Entrar em contato','#b9cdd6'],['Em negociação','#e2c38f'],['Confirmado','#9cc4a4'],['Concluído','#7fa7b5'],['Não avançou','#d3a3a1']];
 function setPartnerFilter(st){PARTNER_STATUS=st;renderPartners()}
 function renderPartners(){
  const query=(document.getElementById('partnerSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
