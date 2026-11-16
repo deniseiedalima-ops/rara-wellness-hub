@@ -279,6 +279,7 @@
    <div class="card">
     <h3 style="font:500 22px Fraunces;margin:0 0 4px">Montar mensagem</h3>
     <p class="muted" style="margin:0 0 6px;font-size:12px">Escolha a marca, o segmento e o modelo. O nome e o motivo entram sozinhos no texto — ajuste o que quiser antes de enviar.</p>
+    <div class="field"><label>Quem está enviando</label><div class="seg-chips" id="msgSender"><button type="button" class="seg-chip" data-sender="Denise" onclick="setMsgSender('Denise')">Denise</button><button type="button" class="seg-chip" data-sender="Maria Eduarda" onclick="setMsgSender('Maria Eduarda')">Maria Eduarda</button></div></div>
     <div class="field"><label>Marca</label><select id="msgBrand" onchange="msgBrandChanged()"></select></div>
     <div class="field hidden" id="msgBrandOtherWrap"><label>Nome da marca</label><input id="msgBrandOther" placeholder="Ex.: Ateliê Flor" oninput="buildBrandMessage()"></div>
     <div class="field"><label>Segmento da marca</label><div class="seg-chips" id="msgSegs"></div></div>
@@ -1486,13 +1487,13 @@ FC_READY=true;refreshForecastMeta();
 // ================= Mensagem para enviar à marca =================
 const MSG_TEMPLATES={
  1:`Oiii! Tudo bem? 🤎
-Me chamo Denise e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto que nasceu recentemente em Imperatriz, com o propósito de proporcionar experiências que incentivem mulheres a desacelerar, cuidar de si, experimentar coisas novas e criar conexões.
+Me chamo [REMETENTE] e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto que nasceu recentemente em Imperatriz, com o propósito de proporcionar experiências que incentivem mulheres a desacelerar, cuidar de si, experimentar coisas novas e criar conexões.
 No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição, e pensamos que seria muito interessante ter vocês conosco como parceiros!
 Atualmente, já contamos com marcas como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras empresas que estão construindo essa experiência com a gente.
 Acreditamos que [NOME DA MARCA] combina com a RARA porque [MOTIVO].
 Preparamos uma proposta com diferentes possibilidades de parceria e gostaríamos muito de apresentar essa oportunidade à marca. Você teria interesse em conhecer um pouquinho mais sobre o projeto e receber nossa proposta completa? 🤎`,
  2:`Olá! Tudo bem? 🤎
-Me chamo Denise e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto criado recentemente em Imperatriz, com o propósito de proporcionar experiências voltadas ao bem-estar, autocuidado e conexão entre mulheres.
+Me chamo [REMETENTE] e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto criado recentemente em Imperatriz, com o propósito de proporcionar experiências voltadas ao bem-estar, autocuidado e conexão entre mulheres.
 No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição. Já contamos com parceiros como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras marcas que acreditam na nossa proposta.
 Acreditamos que [NOME DA MARCA] combina muito com a RARA porque [MOTIVO].
 Gostaríamos muito de apresentar a possibilidade de uma parceria com vocês! Temos uma proposta com diferentes formatos de participação e visibilidade para as marcas parceiras, incluindo presença no banner oficial e divulgação nas nossas redes sociais e durante o evento.
@@ -1511,7 +1512,9 @@ const MSG_SEGMENTS=[
  ['Flores e presentes','as criações de vocês transmitem cuidado e afeto, e queremos que cada participante viva momentos especiais e cheios de significado'],
  ['Outro','']
 ];
-let MSG_SEG='',MSG_EDITED=false;
+let MSG_SEG='',MSG_EDITED=false,MSG_SENDER='';
+function msgSender(){return MSG_SENDER||(['Denise','Maria Eduarda'].includes(currentUser())?currentUser():'Denise')}
+function setMsgSender(n){MSG_SENDER=n;buildBrandMessage()}
 function setPartnerTab(t){
  document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('active',b.dataset.ptab===t));
  document.getElementById('ptab-brands').classList.toggle('hidden',t!=='brands');
@@ -1532,11 +1535,11 @@ function msgBrandChanged(keepReason){
  document.getElementById('msgBrandOtherWrap').classList.toggle('hidden',id!=='__other');
  const p=(data.partners||[]).find(x=>x.id===id);
  if(p&&!keepReason&&p.messageReason)document.getElementById('msgReason').value=p.messageReason;
- if(p&&!keepReason&&p.segment){MSG_SEG=p.segment;document.querySelectorAll('.seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===MSG_SEG))}
+ if(p&&!keepReason&&p.segment){MSG_SEG=p.segment;document.querySelectorAll('#msgSegs .seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===MSG_SEG))}
  MSG_EDITED=false;buildBrandMessage();
 }
 function setMsgSegment(n){
- MSG_SEG=n;document.querySelectorAll('.seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===n));
+ MSG_SEG=n;document.querySelectorAll('#msgSegs .seg-chip').forEach(c=>c.classList.toggle('active',c.textContent===n));
  const seg=MSG_SEGMENTS.find(s=>s[0]===n);
  const r=document.getElementById('msgReason');
  if(seg&&seg[1]&&(!r.value.trim()||MSG_SEGMENTS.some(s=>s[1]===r.value.trim())))r.value=seg[1];
@@ -1554,7 +1557,8 @@ function buildBrandMessage(){
  const name=msgBrandName()||'[NOME DA MARCA]';
  let reason=document.getElementById('msgReason').value.trim().replace(/[.!\s]+$/,'');
  if(reason)reason=reason.charAt(0).toLocaleLowerCase('pt-BR')+reason.slice(1);
- const text=MSG_TEMPLATES[model].replace('[NOME DA MARCA]',name).replace('[MOTIVO]',reason||'[MOTIVO PELO QUAL A MARCA SE CONECTA AO PROPÓSITO DO EVENTO E AO NOSSO PÚBLICO]');
+ document.querySelectorAll('#msgSender .seg-chip').forEach(c=>c.classList.toggle('active',c.dataset.sender===msgSender()));
+ const text=MSG_TEMPLATES[model].replace('[REMETENTE]',msgSender()).replace('[NOME DA MARCA]',name).replace('[MOTIVO]',reason||'[MOTIVO PELO QUAL A MARCA SE CONECTA AO PROPÓSITO DO EVENTO E AO NOSSO PÚBLICO]');
  const prev=document.getElementById('msgPreview');
  prev.value=text;MSG_EDITED=false;
  const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);
