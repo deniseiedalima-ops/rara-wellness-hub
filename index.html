@@ -1487,13 +1487,13 @@ FC_READY=true;refreshForecastMeta();
 // ================= Mensagem para enviar à marca =================
 const MSG_TEMPLATES={
  1:`Oiii! Tudo bem? 🤎
-Me chamo [REMETENTE] e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto que nasceu recentemente em Imperatriz, com o propósito de proporcionar experiências que incentivem mulheres a desacelerar, cuidar de si, experimentar coisas novas e criar conexões.
+Me chamo [REMETENTE] e sou [PAPEL] da RARA | Wellness Club (@rarawellnessclub), um projeto que nasceu recentemente em Imperatriz, com o propósito de proporcionar experiências que incentivem mulheres a desacelerar, cuidar de si, experimentar coisas novas e criar conexões.
 No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição, e pensamos que seria muito interessante ter vocês conosco como parceiros!
 Atualmente, já contamos com marcas como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras empresas que estão construindo essa experiência com a gente.
 Acreditamos que [NOME DA MARCA] combina com a RARA porque [MOTIVO].
 Preparamos uma proposta com diferentes possibilidades de parceria e gostaríamos muito de apresentar essa oportunidade à marca. Você teria interesse em conhecer um pouquinho mais sobre o projeto e receber nossa proposta completa? 🤎`,
  2:`Olá! Tudo bem? 🤎
-Me chamo [REMETENTE] e sou a criadora da RARA | Wellness Club (@rarawellnessclub), um projeto criado recentemente em Imperatriz, com o propósito de proporcionar experiências voltadas ao bem-estar, autocuidado e conexão entre mulheres.
+Me chamo [REMETENTE] e sou [PAPEL] da RARA | Wellness Club (@rarawellnessclub), um projeto criado recentemente em Imperatriz, com o propósito de proporcionar experiências voltadas ao bem-estar, autocuidado e conexão entre mulheres.
 No dia 05/12, às 16h, realizaremos nosso primeiro encontro, o The Soft Reset, no Espaço Bougainville. Estamos reunindo algumas marcas e profissionais para fazer parte dessa primeira edição. Já contamos com parceiros como HYO Biquíni, Rubi Concept, Essence Multimarcas, Empório Boaretto e Track & Field, além de outras marcas que acreditam na nossa proposta.
 Acreditamos que [NOME DA MARCA] combina muito com a RARA porque [MOTIVO].
 Gostaríamos muito de apresentar a possibilidade de uma parceria com vocês! Temos uma proposta com diferentes formatos de participação e visibilidade para as marcas parceiras, incluindo presença no banner oficial e divulgação nas nossas redes sociais e durante o evento.
@@ -1558,7 +1558,7 @@ function buildBrandMessage(){
  let reason=document.getElementById('msgReason').value.trim().replace(/[.!\s]+$/,'');
  if(reason)reason=reason.charAt(0).toLocaleLowerCase('pt-BR')+reason.slice(1);
  document.querySelectorAll('#msgSender .seg-chip').forEach(c=>c.classList.toggle('active',c.dataset.sender===msgSender()));
- const text=MSG_TEMPLATES[model].replace('[REMETENTE]',msgSender()).replace('[NOME DA MARCA]',name).replace('[MOTIVO]',reason||'[MOTIVO PELO QUAL A MARCA SE CONECTA AO PROPÓSITO DO EVENTO E AO NOSSO PÚBLICO]');
+ const text=MSG_TEMPLATES[model].replace('[REMETENTE]',msgSender()).replace('[PAPEL]',msgSender()==='Maria Eduarda'?'uma das criadoras':'a criadora').replace('[NOME DA MARCA]',name).replace('[MOTIVO]',reason||'[MOTIVO PELO QUAL A MARCA SE CONECTA AO PROPÓSITO DO EVENTO E AO NOSSO PÚBLICO]');
  const prev=document.getElementById('msgPreview');
  prev.value=text;MSG_EDITED=false;
  const p=(data.partners||[]).find(x=>x.id===document.getElementById('msgBrand').value);
