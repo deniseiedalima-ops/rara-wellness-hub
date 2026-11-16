@@ -33,6 +33,7 @@
 .reg-filters{background:#fffdfa;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.reg-filters label{display:flex;align-items:center;gap:6px}
 .fc-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start}.fc-results{position:sticky;top:18px}.fc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}.fc-hint{font-size:10px;color:#9aa4a4;margin-top:-6px}.fc-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.fc-kpi{background:#fbf8f3;border:1px solid var(--line);border-radius:12px;padding:12px 13px}.fc-kpi b{display:block;font:500 22px Fraunces,serif;margin-top:4px}.fc-kpi small{color:#8b9697;font-size:10px}.fc-result{border-radius:14px;padding:16px 18px;margin:6px 0 12px}.fc-result.pos{background:#edf5e9}.fc-result.neg{background:#fbefed}.fc-result b{font:500 32px Fraunces,serif;display:block}.fc-insight{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid #f0ede8;font-size:12.5px;line-height:1.5}.fc-insight:last-child{border:0}.fc-insight .ic{font-size:16px;flex:0 0 22px}.fc-cost-row{display:grid;grid-template-columns:1fr 130px 28px;gap:7px;margin-bottom:7px}.fc-cost-row input{border:1px solid var(--line);background:#fffdfa;border-radius:9px;padding:9px 10px;color:var(--ink);width:100%;font-size:12px}.fc-bar{height:8px;background:#edf0eb;border-radius:20px;overflow:hidden;margin:6px 0 2px}.fc-bar span{display:block;height:100%;background:#a9c5b0}
 @media(max-width:950px){.fc-layout{grid-template-columns:1fr}.fc-results{position:static}}
+.pfilters{margin:0 0 16px}.pfilter{border:1px solid var(--line);background:#fffdfa;color:#66767b;border-radius:30px;padding:8px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:7px}.pfilter b{font-weight:600;background:#f1eee8;border-radius:20px;padding:1px 8px;font-size:11px;color:#55686e}.pfilter:hover{background:var(--blue2)}.pfilter.active{background:var(--ink);border-color:var(--ink);color:#fff}.pfilter.active b{background:#ffffff26;color:#fff}.pfilter .sd{width:8px;height:8px;border-radius:50%}.pfilter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.pfilter-row .lbl{font-size:11px;color:#9aa4a4;min-width:96px}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -265,6 +266,7 @@
   <div class="card"><div class="stat-label">Parcerias</div><div class="stat-value" id="partnerPartnershipCount">0</div></div>
  </div>
  <div class="notice">Cadastre marcas que apoiam a RARA, patrocinadores, permutas, fornecedores parceiros e investimentos. Os registros ficam organizados neste workspace.</div>
+ <div class="pfilters" id="partnerFilters"></div>
  <div class="grid idea-grid" id="partnersGrid"></div>
 </section>
 </main></div>
@@ -666,10 +668,24 @@ function renderLinks(){
 }
 function copyLink(id){let item=(data.links||[]).find(x=>x.id===id);if(item&&navigator.clipboard?.writeText)navigator.clipboard.writeText(item.url).then(()=>alert('Link copiado.')).catch(()=>alert(item.url));else if(item)alert(item.url)}
 function editPartner(id){openModal('partner-edit',{id})}
+let PARTNER_STATUS='all',PARTNER_REL='all';
+const PARTNER_RELS=[['Parceria','Parceria'],['Investimento','Investimento / patrocínio'],['Permuta','Permuta'],['Apoio','Apoio'],['Fornecedor parceiro','Fornecedor parceiro']];
+function setPartnerRel(r){PARTNER_REL=r;renderPartners()}
+const PARTNER_STATUSES=[['Em negociação','#e2c38f'],['Confirmado','#9cc4a4'],['Concluído','#7fa7b5'],['Não avançou','#d3a3a1']];
+function setPartnerFilter(st){PARTNER_STATUS=st;renderPartners()}
 function renderPartners(){
  const query=(document.getElementById('partnerSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
  const all=data.partners||[];
- const items=all.filter(x=>[x.brand,x.relationship,x.status,x.contribution,x.contact,x.notes].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query)));
+ const bySearch=all.filter(x=>[x.brand,x.relationship,x.status,x.contribution,x.contact,x.notes].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query)));
+ const stOf=x=>x.status||'Em negociação',relOf=x=>x.relationship||'Parceria';
+ const byRel=PARTNER_REL==='all'?bySearch:bySearch.filter(x=>relOf(x)===PARTNER_REL);
+ const byStatus=PARTNER_STATUS==='all'?bySearch:bySearch.filter(x=>stOf(x)===PARTNER_STATUS);
+ const items=byRel.filter(x=>PARTNER_STATUS==='all'||stOf(x)===PARTNER_STATUS);
+ const fbox=document.getElementById('partnerFilters');
+ if(fbox){
+  const chips=(list,cur,fn,count)=>list.map(([key,label,color])=>`<button type="button" class="pfilter ${cur===key?'active':''}" onclick="${fn}('${key}')">${color?`<span class="sd" style="background:${color}"></span>`:''}${esc(label)} <b>${count(key)}</b></button>`).join('');
+  fbox.innerHTML=`<div class="pfilter-row"><span class="lbl">Status</span>${chips([['all','Todos'],...PARTNER_STATUSES.map(([n,c])=>[n,n,c])],PARTNER_STATUS,'setPartnerFilter',k=>k==='all'?byRel.length:byRel.filter(x=>stOf(x)===k).length)}</div><div class="pfilter-row"><span class="lbl">Tipo de relação</span>${chips([['all','Todos'],...PARTNER_RELS],PARTNER_REL,'setPartnerRel',k=>k==='all'?byStatus.length:byStatus.filter(x=>relOf(x)===k).length)}</div>`;
+ }
  document.getElementById('partnerCount').textContent=all.length;
  document.getElementById('partnerInvestmentCount').textContent=all.filter(x=>x.relationship==='Investimento').length;
  document.getElementById('partnerPartnershipCount').textContent=all.filter(x=>x.relationship!=='Investimento').length;
@@ -686,7 +702,7 @@ function renderPartners(){
    ${whoLine(x)}
    <div class="partner-actions"><button type="button" class="btn partner-edit-btn" onclick="editPartner('${x.id}')">✎ Editar</button><button type="button" class="small-link" onclick="removeItem('partners','${x.id}')">remover registro</button></div>
   </article>`;
- }).join('')||'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>';
+ }).join('')||(all.length?`<div class="empty">Nenhuma marca ${PARTNER_STATUS==='all'&&PARTNER_REL==='all'?'encontrada na busca':'com esses filtros'}.</div>`:'<div class="empty">Nenhuma marca cadastrada. Adicione sua primeira parceria ou investimento.</div>');
 }
 function regDate(r){return r.paymentDate||String(r.registrationDate||r.created||r.createdAt||'').slice(0,10)}
 function filteredRegistrations(){
