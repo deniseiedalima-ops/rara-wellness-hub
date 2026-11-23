@@ -37,11 +37,24 @@
 .ptabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px}.ptab{border:0;background:transparent;padding:10px 14px;font-size:13.5px;color:#7c8b8f;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}.ptab.active{color:var(--ink);border-color:var(--ink);font-weight:600}
 .msg-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start}.msg-models{display:grid;gap:9px}.msg-model{text-transform:none!important;letter-spacing:0!important;font-weight:400;display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 13px;cursor:pointer;background:#fffdfa}.msg-model input{width:auto;margin-top:3px;accent-color:#8eabb6}.msg-model.active{border-color:#a9c9d4;background:#f2f8f9}.msg-model b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px}.msg-model small{color:#8b9697;font-size:11.5px}.msg-preview{width:100%;min-height:420px;border:1px solid var(--line);border-radius:14px;padding:16px;font:14px/1.6 'DM Sans',sans-serif;color:var(--ink);background:#fff;resize:vertical;white-space:pre-wrap}.msg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.seg-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 2px}.seg-chip{border:1px solid var(--line);background:#fffdfa;color:#66767b;border-radius:30px;padding:6px 11px;font-size:12px;cursor:pointer}.seg-chip.active{background:var(--ink);border-color:var(--ink);color:#fff}
 @media(max-width:900px){.msg-layout{grid-template-columns:1fr}}
+.top-left{display:flex;align-items:center;gap:14px}
+.sidetoggle{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#fffdfa;color:#55686e;display:grid;place-items:center;cursor:pointer;padding:0;transition:background .2s}
+.sidetoggle:hover{background:var(--blue2)}
+.sidetoggle svg{width:18px;height:18px;transition:transform .25s}
+.side{transition:transform .28s ease}
+.main{transition:margin-left .28s ease,width .28s ease}
+@media(min-width:651px){
+ html.side-collapsed .side{transform:translateX(-100%);box-shadow:none}
+ html.side-collapsed .main{margin-left:0!important;width:100%!important}
+ html.side-collapsed .sidetoggle svg{transform:scaleX(-1)}
+}
+@media(max-width:650px){.sidetoggle{display:none}}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
 #registrations .toolbar .btn{white-space:nowrap}
-</style></head>
+</style><script>try{if(localStorage.getItem('rara_side_collapsed')==='1')document.documentElement.classList.add('side-collapsed')}catch(e){}</script>
+</head>
 <body>
 <div class="app">
 <aside class="side">
@@ -66,7 +79,7 @@
  <div class="side-bottom"><div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Modo local · neste navegador</span></div><button class="small-link" onclick="openSettings()">Conta & sincronização</button><br><button class="small-link" onclick="downloadBackup()">Baixar backup completo</button><br>RARA · made with care 🤎</div>
 </aside>
 <main class="main">
-<header class="top"><div><div class="eyebrow">RARA / MANAGEMENT HUB</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div><div class="topright"><span class="userlabel muted" id="todayLabel"></span><button type="button" class="syncchip off" id="syncChip" onclick="openSettings()" title="Conta & sincronização"><span class="dot"></span><span id="syncChipText">Entrar para sincronizar</span></button><button type="button" class="userchip" onclick="openWho()" title="Trocar quem está usando"><span class="avatar" id="userAvatar">?</span><span id="userName">Quem está usando?</span></button></div></header>
+<header class="top"><div class="top-left"><button type="button" class="sidetoggle" id="sideToggle" onclick="toggleSide()" title="Recolher menu" aria-label="Recolher menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path d="M15.5 10l-2 2 2 2"/></svg></button><div><div class="eyebrow">RARA / MANAGEMENT HUB</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div></div><div class="topright"><span class="userlabel muted" id="todayLabel"></span><button type="button" class="syncchip off" id="syncChip" onclick="openSettings()" title="Conta & sincronização"><span class="dot"></span><span id="syncChipText">Entrar para sincronizar</span></button><button type="button" class="userchip" onclick="openWho()" title="Trocar quem está usando"><span class="avatar" id="userAvatar">?</span><span id="userName">Quem está usando?</span></button></div></header>
 
 <section class="page active" id="dashboard">
  <div class="grid stats">
@@ -1598,6 +1611,14 @@ function openBrandMessage(id){
  window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ================= Menu lateral recolhível =================
+function setSideCollapsed(c){
+ document.documentElement.classList.toggle('side-collapsed',c);
+ try{localStorage.setItem('rara_side_collapsed',c?'1':'0')}catch{}
+ const b=document.getElementById('sideToggle');if(b){const t=c?'Mostrar menu':'Recolher menu';b.title=t;b.setAttribute('aria-label',t);b.setAttribute('aria-expanded',String(!c))}
+}
+function toggleSide(){setSideCollapsed(!document.documentElement.classList.contains('side-collapsed'))}
+setSideCollapsed(document.documentElement.classList.contains('side-collapsed'));
 // ================= Quem está usando (Denise / Maria Eduarda) =================
 const USER_KEY='rara_user_name';
 let STAMP_SNAPSHOT=null;
