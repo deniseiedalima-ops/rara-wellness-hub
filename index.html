@@ -49,6 +49,7 @@
  html.side-collapsed .sidetoggle svg{transform:scaleX(-1)}
 }
 @media(max-width:650px){.sidetoggle{display:none}}
+.fin-filters{margin-top:-6px}th.sortable{cursor:pointer;user-select:none}th.sortable:hover{color:var(--ink)}.fin-sum{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#7c8b8f}.fin-sum b{font-weight:600}
 .registration-intro{background:linear-gradient(110deg,#fffdfb,#f4f0ea);border-color:#e7ded4}
 .registration-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
 #registrations .data-table{min-width:850px}
@@ -107,7 +108,19 @@
 </section>
 
 <section class="page" id="finance">
- <div class="toolbar"><button class="btn" onclick="openModal('transaction')">＋ Novo lançamento</button><button class="btn soft" onclick="exportCSV()">Exportar CSV</button><select id="financeFilter" onchange="renderFinance()" style="max-width:170px"><option value="all">Todos os lançamentos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></div>
+ <div class="toolbar"><button class="btn" onclick="openModal('transaction')">＋ Novo lançamento</button><button class="btn soft" onclick="exportCSV()">Exportar CSV</button><input id="finSearch" type="search" placeholder="Pesquisar por palavra..." oninput="renderFinance()" style="max-width:260px"></div>
+ <div class="toolbar reg-filters fin-filters">
+  <select id="financeFilter" onchange="renderFinance()" style="max-width:150px"><option value="all">Todos os tipos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select>
+  <select id="finCategory" onchange="renderFinance()" style="max-width:170px"></select>
+  <select id="finStatus" onchange="renderFinance()" style="max-width:160px"><option value="all">Todos os status</option><option value="paid">Pago/Recebido</option><option value="Pendente">Pendente</option></select>
+  <select id="finEvent" onchange="renderFinance()" style="max-width:180px"></select>
+  <label class="muted" style="font-size:11px">De <input id="finFrom" type="date" onchange="renderFinance()" style="max-width:150px"></label>
+  <label class="muted" style="font-size:11px">até <input id="finTo" type="date" onchange="renderFinance()" style="max-width:150px"></label>
+  <label class="muted" style="font-size:11px">Valor de <input id="finMin" type="number" min="0" step="0.01" placeholder="R$" oninput="renderFinance()" style="max-width:90px"></label>
+  <label class="muted" style="font-size:11px">a <input id="finMax" type="number" min="0" step="0.01" placeholder="R$" oninput="renderFinance()" style="max-width:90px"></label>
+  <select id="finSort" onchange="renderFinance()" style="max-width:170px"><option value="recent">Data: mais recentes</option><option value="old">Data: mais antigas</option><option value="high">Valor: maior</option><option value="low">Valor: menor</option><option value="desc">Descrição (A–Z)</option></select>
+  <button class="small-link" onclick="clearFinFilters()">limpar filtros</button>
+ </div>
  <div class="grid stats">
   <div class="card"><div class="stat-label">Receitas</div><div class="stat-value amount-in" id="incomeTotal">R$ 0</div></div>
   <div class="card"><div class="stat-label">Despesas</div><div class="stat-value amount-out" id="expenseTotal">R$ 0</div></div>
@@ -123,7 +136,7 @@
    <div class="item"><div><strong>Marketing & operação</strong><small>Registre mídia, materiais, transporte e taxas</small></div><span class="pill blue">Gestão</span></div>
   </div></div>
  </div>
- <div class="card" style="margin-top:16px"><div class="section-head"><h3>Todos os lançamentos</h3><span class="muted" id="financeCaption"></span></div><div class="tablewrap"><table class="data-table"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Evento</th><th>Status</th><th>Valor</th><th></th></tr></thead><tbody id="transactionsBody"></tbody></table></div></div>
+ <div class="card" style="margin-top:16px"><div class="section-head"><h3>Todos os lançamentos</h3><span class="muted" id="financeCaption"></span></div><div class="tablewrap"><table class="data-table"><thead><tr><th class="sortable" onclick="finSortBy('date')">Data ↕</th><th class="sortable" onclick="finSortBy('desc')">Descrição ↕</th><th>Categoria</th><th>Evento</th><th>Status</th><th class="sortable" onclick="finSortBy('value')">Valor ↕</th><th></th></tr></thead><tbody id="transactionsBody"></tbody></table></div></div>
 </section>
 
 <section class="page" id="registrations">
@@ -628,8 +641,36 @@ let tasks=[];data.events.forEach(e=>(e.pages||[]).forEach(p=>(p.tasks||[]).forEa
  const rank={'Urgente':0,'Média':1,'Baixa':2};todo.sort((a,b)=>(rank[a.priority]??3)-(rank[b.priority]??3)||(a.due||'9999').localeCompare(b.due||'9999'));
  document.getElementById('dashboardChecklist').innerHTML=todo.slice(0,7).map(t=>`<label class="dashboard-task"><input type="checkbox" onchange="toggleChecklistTask('${t.boardId}','${t.id}',this.checked)"><span><strong>${esc(t.title)}</strong><small>${esc(t.boardName)} · ${esc(t.priority)}${t.due?' · prazo '+dateBR(t.due):''}</small></span></label>`).join('')||'<div class="empty">Nenhuma tarefa pendente. Adicione post-its na aba Checklist.</div>';
 }
-function renderFinance(){let ts=data.transactions,filter=document.getElementById('financeFilter').value;if(filter!=='all')ts=ts.filter(x=>x.type===filter);let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('incomeTotal').textContent=money(inc);document.getElementById('expenseTotal').textContent=money(out);document.getElementById('netTotal').textContent=money(inc-out);document.getElementById('transactionCount').textContent=data.transactions.length;document.getElementById('financeCaption').textContent=ts.length+' registros';
-document.getElementById('transactionsBody').innerHTML=ts.map(x=>`<tr><td>${dateBR(x.date)}</td><td><b>${esc(x.description)}</b><div class="muted">${esc(x.notes||'')}</div>${whoLine(x)}</td><td>${esc(x.category)}</td><td>${esc(x.event||'—')}</td><td><span class="pill ${x.status==='Pendente'?'pink':''}">${esc(x.status)}</span></td><td class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</td><td><button class="small-link" onclick="removeItem('transactions','${x.id}')">excluir</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum lançamento registrado.</td></tr>';
+const FIN_CATEGORIES=['Evento','Marketing','Fornecedor','Produto','Inscrição','Parceria','Operação','Transporte','Outros'];
+function finFillSelect(id,first,values){const el=document.getElementById(id);if(!el)return;const cur=el.value||'all';el.innerHTML=`<option value="all">${first}</option>`+values.map(v=>`<option value="${esc(v.value)}">${esc(v.label)}</option>`).join('');el.value=[...el.options].some(o=>o.value===cur)?cur:'all'}
+function finSortBy(k){const el=document.getElementById('finSort');const map={date:['recent','old'],value:['high','low'],desc:['desc','desc']}[k];el.value=el.value===map[0]?map[1]:map[0];renderFinance()}
+function clearFinFilters(){['finSearch','finFrom','finTo','finMin','finMax'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});['financeFilter','finCategory','finStatus','finEvent'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'});document.getElementById('finSort').value='recent';renderFinance()}
+function filteredTransactions(){
+ const g=id=>document.getElementById(id)?.value||'';
+ const type=g('financeFilter')||'all',cat=g('finCategory')||'all',st=g('finStatus')||'all',ev=g('finEvent')||'all';
+ const from=g('finFrom'),to=g('finTo'),min=parseFloat(g('finMin')),max=parseFloat(g('finMax'));
+ const q=g('finSearch').trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const norm=v=>String(v||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const list=(data.transactions||[]).filter(x=>{
+  if(type!=='all'&&x.type!==type)return false;
+  if(cat!=='all'&&(x.category||'Outros')!==cat)return false;
+  if(st==='paid'&&x.status==='Pendente')return false;
+  if(st==='Pendente'&&x.status!=='Pendente')return false;
+  if(ev!=='all'&&(ev==='__none'?String(x.event||'').trim():String(x.event||'').trim()!==ev))return false;
+  if(from&&(!x.date||x.date<from))return false;if(to&&(!x.date||x.date>to))return false;
+  const v=Number(x.amount||0);if(Number.isFinite(min)&&v<min)return false;if(Number.isFinite(max)&&v>max)return false;
+  return !q||[x.description,x.notes,x.category,x.event,x.status,x.createdBy].some(f=>norm(f).includes(q));
+ });
+ const by={recent:(a,b)=>String(b.date||'').localeCompare(String(a.date||'')),old:(a,b)=>String(a.date||'').localeCompare(String(b.date||'')),high:(a,b)=>Number(b.amount||0)-Number(a.amount||0),low:(a,b)=>Number(a.amount||0)-Number(b.amount||0),desc:(a,b)=>String(a.description||'').localeCompare(String(b.description||''),'pt-BR')}[g('finSort')||'recent'];
+ return by?list.slice().sort(by):list;
+}
+function renderFinance(){
+ const cats=[...new Set([...FIN_CATEGORIES,...(data.transactions||[]).map(x=>x.category).filter(Boolean)])];
+ finFillSelect('finCategory','Todas as categorias',cats.map(c=>({value:c,label:c})));
+ const evs=[...new Set((data.transactions||[]).map(x=>String(x.event||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ finFillSelect('finEvent','Todos os eventos',[...evs.map(e=>({value:e,label:e})),{value:'__none',label:'Sem evento'}]);
+ let ts=filteredTransactions();let inc=data.transactions.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0),out=data.transactions.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0);document.getElementById('incomeTotal').textContent=money(inc);document.getElementById('expenseTotal').textContent=money(out);document.getElementById('netTotal').textContent=money(inc-out);document.getElementById('transactionCount').textContent=data.transactions.length;const fIn=ts.filter(x=>x.type==='income').reduce((a,x)=>a+Number(x.amount||0),0),fOut=ts.filter(x=>x.type==='expense').reduce((a,x)=>a+Number(x.amount||0),0);document.getElementById('financeCaption').innerHTML=`<span class="fin-sum"><span>${ts.length} de ${data.transactions.length} lançamentos</span><span>Receitas <b class="amount-in">${money(fIn)}</b></span><span>Despesas <b class="amount-out">${money(fOut)}</b></span><span>Saldo <b>${money(fIn-fOut)}</b></span></span>`;
+document.getElementById('transactionsBody').innerHTML=ts.map(x=>`<tr><td>${dateBR(x.date)}</td><td><b>${esc(x.description)}</b><div class="muted">${esc(x.notes||'')}</div>${whoLine(x)}</td><td>${esc(x.category)}</td><td>${esc(x.event||'—')}</td><td><span class="pill ${x.status==='Pendente'?'pink':''}">${esc(x.status)}</span></td><td class="${x.type==='income'?'amount-in':'amount-out'}">${x.type==='income'?'+':'−'} ${money(x.amount)}</td><td><button class="small-link" onclick="removeItem('transactions','${x.id}')">excluir</button></td></tr>`).join('')||(data.transactions.length?'<tr><td colspan="7" class="empty">Nenhum lançamento com esses filtros.</td></tr>':'<tr><td colspan="7" class="empty">Nenhum lançamento registrado.</td></tr>');
 let months={};data.transactions.forEach(x=>{let m=(x.date||'').slice(0,7);if(!m)return;months[m]??={in:0,out:0};months[m][x.type==='income'?'in':'out']+=x.amount});document.getElementById('cashflow').innerHTML=Object.keys(months).sort().reverse().map(m=>`<div class="item"><div><strong>${new Date(m+'-02').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</strong><small>Entradas ${money(months[m].in)} · Saídas ${money(months[m].out)}</small></div><b>${money(months[m].in-months[m].out)}</b></div>`).join('')||'<div class="empty">O fluxo de caixa será construído conforme os lançamentos.</div>'}
 function renderIdeas(){let f=document.getElementById('ideaFilter').value,arr=data.ideas.filter(x=>f==='all'||x.category===f);document.getElementById('ideasGrid').innerHTML=arr.map(x=>`<div class="card idea"><div class="tag">${esc(x.category)}</div><h3 style="font:500 20px Fraunces;margin:10px 0 4px">${esc(x.title)}</h3><p>${esc(x.description||'Sem descrição.')}</p>${x.next?`<small class="muted">Próximo passo: ${esc(x.next)}</small>`:''}${whoLine(x)}<div style="margin-top:14px"><button class="small-link" onclick="removeItem('ideas','${x.id}')">remover</button></div></div>`).join('')||'<div class="empty">Ainda não há ideias nessa categoria.</div>'}
 function renderEventDetail(){
